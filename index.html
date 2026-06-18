@@ -1,1811 +1,2348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>AV Private Tuitions - Advanced Management System</title>
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22AV%20Private%20Tuitions%22%2C%22short_name%22%3A%22AV%20Tuitions%22%2C%22start_url%22%3A%22.%2Findex.html%22%7D">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-<style>
-:root {
-  --primary: #1abc9c;
-  --secondary: #2c3e50;
-  --tertiary: #34495e;
-  --bg: #f4f6f9;
-  --card: #ffffff;
-  --text: #333;
-  --text-light: #ecf0f1;
-  --border: #ddd;
-  --danger: #e74c3c;
-  --success: #27ae60;
-  --warning: #f39c12;
-  --info: #3498db;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AV Private Tuitions - Advanced Management System</title>
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22AV%20Private%20Tuitions%22%2C%22short_name%22%3A%22AV%20Tuitions%22%2C%22start_url%22%3A%22.%2Findex.html%22%7D">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js">
+    </script>
+    <style>
+        /* ============================================================
+           PASSWORD OVERLAY STYLES (added on top)
+           ============================================================ */
+        #passwordOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #0f172a, #1e293b);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #passwordOverlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
-body.dark-mode {
-  --primary: #16a085;
-  --secondary: #1a252f;
-  --tertiary: #22313f;
-  --bg: #1a1a1a;
-  --card: #2d2d2d;
-  --text: #ecf0f1;
-  --text-light: #95a5a6;
-  --border: #444;
-}
+        .login-card {
+            background: #ffffff;
+            padding: 40px 32px 32px;
+            border-radius: 28px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            animation: popUp 0.5s ease;
+        }
+        @keyframes popUp {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+        .login-card .lock-icon {
+            font-size: 44px;
+            background: #eef2ff;
+            width: 76px;
+            height: 76px;
+            line-height: 76px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            color: #4f46e5;
+        }
+        .login-card h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .login-card p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
 
-body { 
-  font-family: 'Segoe UI', system-ui, sans-serif; 
-  background: var(--bg); 
-  color: var(--text); 
-  padding-bottom: 70px;
-  transition: background 0.3s, color 0.3s;
-}
+        .login-card .input-group {
+            position: relative;
+            margin-bottom: 18px;
+        }
+        .login-card .input-group input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8fafc;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            color: #0f172a;
+        }
+        .login-card .input-group input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            background: #fff;
+        }
+        .login-card .input-group .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #94a3b8;
+        }
 
-header { 
-  background: linear-gradient(135deg, var(--secondary), var(--tertiary));
-  color: white; 
-  padding: 16px; 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
+        .login-card .error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            min-height: 24px;
+            font-weight: 500;
+        }
 
-.header-title { font-size: 1.4em; font-weight: bold; letter-spacing: 0.5px; }
+        .login-card button {
+            width: 100%;
+            padding: 14px;
+            background: #4f46e5;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .login-card button:hover {
+            background: #4338ca;
+        }
+        .login-card button:active {
+            transform: scale(0.97);
+        }
 
-.header-controls {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
+        .login-card .hint {
+            margin-top: 18px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .login-card .hint span {
+            background: #f1f5f9;
+            padding: 2px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #334155;
+        }
 
-.header-controls button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9em;
-  transition: 0.3s;
-}
+        /* ============================================================
+           MAIN APP WRAPPER – hidden until unlocked
+           ============================================================ */
+        #mainApp {
+            display: none;
+        }
+        #mainApp.active {
+            display: block;
+        }
 
-.header-controls button:hover { opacity: 0.8; }
+        /* ============================================================
+           YOUR ORIGINAL STYLES (unchanged)
+           ============================================================ */
+        :root {
+            --primary: #1abc9c;
+            --secondary: #2c3e50;
+            --tertiary: #34495e;
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #333;
+            --text-light: #ecf0f1;
+            --border: #ddd;
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
 
-.search-box {
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--card);
-  color: var(--text);
-  width: 200px;
-}
+        body.dark-mode {
+            --primary: #16a085;
+            --secondary: #1a252f;
+            --tertiary: #22313f;
+            --bg: #1a1a1a;
+            --card: #2d2d2d;
+            --text: #ecf0f1;
+            --text-light: #95a5a6;
+            --border: #444;
+        }
 
-nav { 
-  display: flex; 
-  overflow-x: auto; 
-  background: var(--tertiary);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-nav button { 
-  flex: 1 0 auto; 
-  padding: 12px 8px; 
-  background: transparent; 
-  border: none; 
-  color: var(--text-light); 
-  font-size: 0.9em; 
-  cursor: pointer; 
-  white-space: nowrap;
-  transition: all 0.3s;
-}
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 70px;
+            transition: background 0.3s, color 0.3s;
+        }
 
-nav button:hover, nav button.active { 
-  background: var(--primary); 
-  color: white; 
-}
+        header {
+            background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
 
-.tab { display: none; padding: 16px; animation: fade 0.3s; }
-.tab.active { display: block; }
+        .header-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
 
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
 
-.card { 
-  background: var(--card); 
-  border-radius: 12px; 
-  padding: 16px; 
-  margin-bottom: 20px; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
+        .header-controls button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: 0.3s;
+        }
 
-.dashboard-cards { 
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px; 
-}
+        .header-controls button:hover {
+            opacity: 0.8;
+        }
 
-.mini-card { 
-  background: var(--card); 
-  border-radius: 12px; 
-  padding: 20px;
-  text-align: center; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-left: 4px solid var(--primary);
-  transition: transform 0.3s;
-}
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card);
+            color: var(--text);
+            width: 200px;
+        }
 
-.mini-card:hover { transform: translateY(-4px); }
+        /* Logout button – added for password protection */
+        .logout-btn {
+            background: #e74c3c !important;
+            color: white !important;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        .logout-btn:hover {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
 
-.mini-card .number { 
-  font-size: 2em; 
-  font-weight: bold; 
-  color: var(--primary); 
-}
+        nav {
+            display: flex;
+            overflow-x: auto;
+            background: var(--tertiary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-table { 
-  width: 100%; 
-  border-collapse: collapse; 
-  margin-top: 10px; 
-  font-size: 0.85em; 
-}
+        nav button {
+            flex: 1 0 auto;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 0.9em;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
 
-th, td { 
-  padding: 12px; 
-  border-bottom: 1px solid var(--border); 
-  text-align: left; 
-}
+        nav button:hover,
+        nav button.active {
+            background: var(--primary);
+            color: white;
+        }
 
-th { 
-  background: var(--tertiary);
-  color: white;
-  font-weight: bold;
-}
+        .tab {
+            display: none;
+            padding: 16px;
+            animation: fade 0.3s;
+        }
+        .tab.active {
+            display: block;
+        }
 
-tr:hover { background: var(--bg); }
+        @keyframes fade {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
 
-button.primary { 
-  background: var(--primary); 
-  color: white; 
-  border: none; 
-  padding: 10px 16px; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  font-weight: bold;
-  transition: 0.3s;
-}
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
 
-button.primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
 
-button.danger { 
-  background: var(--danger); 
-  color: white; 
-  border: none; 
-  padding: 6px 12px; 
-  border-radius: 6px; 
-  cursor: pointer;
-  transition: 0.3s;
-  font-size: 0.85em;
-}
+        .mini-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s;
+        }
 
-button.danger:hover { opacity: 0.9; }
+        .mini-card:hover {
+            transform: translateY(-4px);
+        }
 
-button.small { padding: 4px 10px; font-size: 0.8em; }
+        .mini-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
 
-button.secondary {
-  background: var(--info);
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
 
-button.secondary:hover { opacity: 0.9; }
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
 
-input, select, textarea { 
-  padding: 10px; 
-  border: 1px solid var(--border); 
-  border-radius: 8px; 
-  width: 100%; 
-  margin-bottom: 8px; 
-  font-size: 0.9em;
-  background: var(--card);
-  color: var(--text);
-  transition: 0.3s;
-}
+        th {
+            background: var(--tertiary);
+            color: white;
+            font-weight: bold;
+        }
 
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
-}
+        tr:hover {
+            background: var(--bg);
+        }
 
-h2 { margin-bottom: 20px; color: var(--primary); font-size: 1.5em; }
-h3 { margin-top: 20px; margin-bottom: 10px; color: var(--secondary); }
+        button.primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
 
-.filter-section {
-  background: var(--card);
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+        button.primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
 
-.filter-section input { flex: 1; min-width: 200px; margin: 0; }
+        button.danger {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.85em;
+        }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
+        button.danger:hover {
+            opacity: 0.9;
+        }
 
-.stat-item {
-  background: var(--card);
-  padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid var(--primary);
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
+        button.small {
+            padding: 4px 10px;
+            font-size: 0.8em;
+        }
 
-.stat-label { font-size: 0.9em; color: var(--text-light); margin-bottom: 8px; }
-.stat-value { font-size: 1.8em; font-weight: bold; color: var(--primary); }
+        button.secondary {
+            background: var(--info);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
 
-.button-group {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 15px;
-}
+        button.secondary:hover {
+            opacity: 0.9;
+        }
 
-.alert {
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+        input,
+        select,
+        textarea {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            background: var(--card);
+            color: var(--text);
+            transition: 0.3s;
+        }
 
-.alert.success { background: var(--success); color: white; }
-.alert.warning { background: var(--warning); color: white; }
-.alert.danger { background: var(--danger); color: white; }
-.alert.info { background: var(--info); color: white; }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
+        }
 
-.attendance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 10px;
-  margin-bottom: 15px;
-}
+        h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 1.5em;
+        }
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--secondary);
+        }
 
-.attendance-card {
-  background: var(--card);
-  padding: 12px;
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  border: 2px solid var(--border);
-  transition: 0.3s;
-}
+        .filter-section {
+            background: var(--card);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-.attendance-card:hover { border-color: var(--primary); }
-.attendance-card.selected { border-color: var(--primary); background: var(--primary); color: white; }
+        .filter-section input {
+            flex: 1;
+            min-width: 200px;
+            margin: 0;
+        }
 
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  overflow-y: auto;
-}
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-.modal-content {
-  background: var(--card);
-  margin: 5% auto;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-}
+        .stat-item {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
 
-.close-modal {
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-  cursor: pointer;
-  color: var(--text-light);
-}
+        .stat-label {
+            font-size: 0.9em;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary);
+        }
 
-.close-modal:hover { color: var(--danger); }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
 
-.grade-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-weight: bold;
-  font-size: 0.9em;
-  color: white;
-}
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.grade-a { background: var(--success); }
-.grade-b { background: var(--info); }
-.grade-c { background: var(--warning); }
-.grade-d, .grade-f { background: var(--danger); }
+        .alert.success {
+            background: var(--success);
+            color: white;
+        }
+        .alert.warning {
+            background: var(--warning);
+            color: white;
+        }
+        .alert.danger {
+            background: var(--danger);
+            color: white;
+        }
+        .alert.info {
+            background: var(--info);
+            color: white;
+        }
 
-.chart-container {
-  position: relative;
-  height: 300px;
-  margin-bottom: 20px;
-}
+        .attendance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
 
-.no-data {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-light);
-}
+        .attendance-card {
+            background: var(--card);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            transition: 0.3s;
+        }
 
-@media (max-width: 768px) {
-  header { flex-direction: column; }
-  .search-box { width: 100%; }
-  nav button { font-size: 0.75em; padding: 8px 4px; }
-  table { font-size: 0.7em; }
-  .dashboard-cards { grid-template-columns: repeat(2, 1fr); }
-}
+        .attendance-card:hover {
+            border-color: var(--primary);
+        }
+        .attendance-card.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
 
-.notification {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  background: var(--success);
-  color: white;
-  padding: 16px 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  animation: slideIn 0.3s ease;
-  z-index: 2000;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
 
-@keyframes slideIn {
-  from { transform: translateX(400px); }
-  to { transform: translateX(0); }
-}
-</style>
+        .modal-content {
+            background: var(--card);
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: white;
+        }
+
+        .grade-a {
+            background: var(--success);
+        }
+        .grade-b {
+            background: var(--info);
+        }
+        .grade-c {
+            background: var(--warning);
+        }
+        .grade-d,
+        .grade-f {
+            background: var(--danger);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+            }
+            .search-box {
+                width: 100%;
+            }
+            nav button {
+                font-size: 0.75em;
+                padding: 8px 4px;
+            }
+            table {
+                font-size: 0.7em;
+            }
+            .dashboard-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 2000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-  <div class="header-title">📚 AV PRIVATE TUITIONS - Advanced Management System</div>
-  <div class="header-controls">
-    <input type="text" class="search-box" id="globalSearch" placeholder="🔍 Search...">
-    <button onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
-    <button onclick="openSettings()" title="Settings">⚙️</button>
-  </div>
-</header>
 
-<nav>
-  <button class="tablink active" data-tab="dashboard">📊 Dashboard</button>
-  <button class="tablink" data-tab="students">🎓 Students</button>
-  <button class="tablink" data-tab="teachers">👩‍🏫 Teachers</button>
-  <button class="tablink" data-tab="courses">📚 Courses</button>
-  <button class="tablink" data-tab="fees">💰 Fees</button>
-  <button class="tablink" data-tab="attendance">📅 Attendance</button>
-  <button class="tablink" data-tab="exams">📝 Exams</button>
-  <button class="tablink" data-tab="schedule">⏰ Schedule</button>
-  <button class="tablink" data-tab="reports">📈 Reports</button>
-</nav>
-
-<!-- DASHBOARD -->
-<div id="dashboard" class="tab active">
-  <h2>📊 Dashboard</h2>
-  <div class="dashboard-cards" id="dashCards"></div>
-  <h3>📊 Financial Overview</h3>
-  <div class="stats" id="dashStats"></div>
-  <div class="button-group">
-    <button class="secondary" onclick="exportDataJSON()">📥 Export JSON</button>
-    <button class="secondary" onclick="exportDataCSV()">📄 Export CSV</button>
-    <button class="secondary" onclick="generatePDF()">📄 PDF Report</button>
-  </div>
-  <div class="card" id="recentFees"></div>
-  <div class="card">
-    <h3>💰 Revenue Chart</h3>
-    <div class="chart-container"><canvas id="revenueChart"></canvas></div>
-  </div>
-</div>
-
-<!-- STUDENTS -->
-<div id="students" class="tab">
-  <h2>🎓 Students Management</h2>
-  <div class="filter-section">
-    <input type="text" id="studentFilter" placeholder="🔍 Search students...">
-    <button class="secondary" onclick="clearStudentFilter()">Clear</button>
-  </div>
-  
-  <form id="studentForm" class="card">
-    <h3>Add/Edit Student</h3>
-    <input type="hidden" id="sId">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <input type="text" id="sName" placeholder="Full Name" required>
-      <input type="text" id="sPhone" placeholder="Phone">
-      <input type="text" id="sClass" placeholder="Class (e.g., 10th)">
-      <input type="email" id="sEmail" placeholder="Email">
+    <!-- ============================================================
+    PASSWORD OVERLAY
+    ============================================================ -->
+    <div id="passwordOverlay">
+        <div class="login-card">
+            <div class="lock-icon">🔒</div>
+            <h2>Access Protected</h2>
+            <p>Enter the password to unlock the system</p>
+            <div class="input-group">
+                <span class="input-icon">🔑</span>
+                <input type="password" id="passwordInput" placeholder="Enter password" autofocus />
+            </div>
+            <div class="error-msg" id="loginError"></div>
+            <button id="loginBtn">Unlock Dashboard</button>
+            <div class="hint">
+                Default password: <span>admin123</span>
+            </div>
+        </div>
     </div>
-    <select id="sCourses" multiple size="3" required>
-      <option value="">-- Select Courses --</option>
-    </select>
-    <small>Hold Ctrl/Cmd to select multiple courses</small>
-    <button type="submit" class="primary">💾 Save Student</button>
-  </form>
-  <table id="studentTable"><thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Class</th><th>Courses</th><th>Grade</th><th>Actions</th></tr></thead><tbody></tbody></table>
-</div>
 
-<!-- TEACHERS -->
-<div id="teachers" class="tab">
-  <h2>👩‍🏫 Teachers Management</h2>
-  <div class="filter-section">
-    <input type="text" id="teacherFilter" placeholder="🔍 Search teachers...">
-    <button class="secondary" onclick="clearTeacherFilter()">Clear</button>
-  </div>
-  
-  <form id="teacherForm" class="card">
-    <h3>Add/Edit Teacher</h3>
-    <input type="hidden" id="tId">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <input type="text" id="tName" placeholder="Full Name" required>
-      <input type="email" id="tEmail" placeholder="Email" required>
-      <input type="text" id="tPhone" placeholder="Phone">
-      <input type="text" id="tQualification" placeholder="Qualification (B.Sc, M.Sc, etc)">
+    <!-- ============================================================
+    MAIN APPLICATION (protected)
+    ============================================================ -->
+    <div id="mainApp">
+        <header>
+            <div class="header-title">📚 AV PRIVATE TUITIONS - Advanced Management System</div>
+            <div class="header-controls">
+                <input type="text" class="search-box" id="globalSearch" placeholder="🔍 Search...">
+                <button onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+                <button onclick="openSettings()" title="Settings">⚙️</button>
+                <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+            </div>
+        </header>
+
+        <nav>
+            <button class="tablink active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="tablink" data-tab="students">🎓 Students</button>
+            <button class="tablink" data-tab="teachers">👩‍🏫 Teachers</button>
+            <button class="tablink" data-tab="courses">📚 Courses</button>
+            <button class="tablink" data-tab="fees">💰 Fees</button>
+            <button class="tablink" data-tab="attendance">📅 Attendance</button>
+            <button class="tablink" data-tab="exams">📝 Exams</button>
+            <button class="tablink" data-tab="schedule">⏰ Schedule</button>
+            <button class="tablink" data-tab="reports">📈 Reports</button>
+        </nav>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="tab active">
+            <h2>📊 Dashboard</h2>
+            <div class="dashboard-cards" id="dashCards"></div>
+            <h3>📊 Financial Overview</h3>
+            <div class="stats" id="dashStats"></div>
+            <div class="button-group">
+                <button class="secondary" onclick="exportDataJSON()">📥 Export JSON</button>
+                <button class="secondary" onclick="exportDataCSV()">📄 Export CSV</button>
+                <button class="secondary" onclick="generatePDF()">📄 PDF Report</button>
+            </div>
+            <div class="card" id="recentFees"></div>
+            <div class="card">
+                <h3>💰 Revenue Chart</h3>
+                <div class="chart-container"><canvas id="revenueChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- STUDENTS -->
+        <div id="students" class="tab">
+            <h2>🎓 Students Management</h2>
+            <div class="filter-section">
+                <input type="text" id="studentFilter" placeholder="🔍 Search students...">
+                <button class="secondary" onclick="clearStudentFilter()">Clear</button>
+            </div>
+
+            <form id="studentForm" class="card">
+                <h3>Add/Edit Student</h3>
+                <input type="hidden" id="sId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="sName" placeholder="Full Name" required>
+                    <input type="text" id="sPhone" placeholder="Phone">
+                    <input type="text" id="sClass" placeholder="Class (e.g., 10th)">
+                    <input type="email" id="sEmail" placeholder="Email">
+                </div>
+                <select id="sCourses" multiple size="3" required>
+                    <option value="">-- Select Courses --</option>
+                </select>
+                <small>Hold Ctrl/Cmd to select multiple courses</small>
+                <button type="submit" class="primary">💾 Save Student</button>
+            </form>
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Class</th>
+                        <th>Courses</th>
+                        <th>Grade</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- TEACHERS -->
+        <div id="teachers" class="tab">
+            <h2>👩‍🏫 Teachers Management</h2>
+            <div class="filter-section">
+                <input type="text" id="teacherFilter" placeholder="🔍 Search teachers...">
+                <button class="secondary" onclick="clearTeacherFilter()">Clear</button>
+            </div>
+
+            <form id="teacherForm" class="card">
+                <h3>Add/Edit Teacher</h3>
+                <input type="hidden" id="tId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="tName" placeholder="Full Name" required>
+                    <input type="email" id="tEmail" placeholder="Email" required>
+                    <input type="text" id="tPhone" placeholder="Phone">
+                    <input type="text" id="tQualification" placeholder="Qualification (B.Sc, M.Sc, etc)">
+                </div>
+                <input type="text" id="tSubjects" placeholder="Subjects (comma separated)" required>
+                <button type="submit" class="primary">💾 Save Teacher</button>
+            </form>
+            <table id="teacherTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Subjects</th>
+                        <th>Qualification</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- COURSES -->
+        <div id="courses" class="tab">
+            <h2>📚 Courses / Subjects</h2>
+            <div class="filter-section">
+                <input type="text" id="courseFilter" placeholder="🔍 Search courses...">
+                <button class="secondary" onclick="clearCourseFilter()">Clear</button>
+            </div>
+
+            <form id="courseForm" class="card">
+                <h3>Add/Edit Course</h3>
+                <input type="hidden" id="cId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="cName" placeholder="Course Name" required>
+                    <input type="number" id="cFee" placeholder="Fee (₹)" required>
+                    <select id="cTeacher">
+                        <option value="">Select Teacher</option>
+                    </select>
+                    <input type="text" id="cDuration" placeholder="Duration (e.g., 3 months)">
+                </div>
+                <textarea id="cDescription" placeholder="Course Description" rows="3"></textarea>
+                <button type="submit" class="primary">💾 Save Course</button>
+            </form>
+            <table id="courseTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Fee</th>
+                        <th>Teacher</th>
+                        <th>Duration</th>
+                        <th>Students</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- FEES -->
+        <div id="fees" class="tab">
+            <h2>💰 Fee Management</h2>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Total Collected</div>
+                    <div class="stat-value" id="totalCollected">₹0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Pending Fees</div>
+                    <div class="stat-value" id="pendingFees">₹0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Collection %</div>
+                    <div class="stat-value" id="collectionRate">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Expected</div>
+                    <div class="stat-value" id="totalExpected">₹0</div>
+                </div>
+            </div>
+
+            <form id="paymentForm" class="card">
+                <h3>Record Payment</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <select id="payStudent" required>
+                        <option value="">Select Student</option>
+                    </select>
+                    <select id="payCourse" required>
+                        <option value="">Select Course</option>
+                    </select>
+                    <input type="number" id="payAmount" placeholder="Amount" required>
+                    <input type="date" id="payDate" required>
+                </div>
+                <button type="submit" class="primary">✓ Record Payment</button>
+            </form>
+
+            <h3>Payment History</h3>
+            <div class="filter-section">
+                <input type="text" id="feeFilter" placeholder="🔍 Search payments...">
+                <button class="secondary" onclick="clearFeeFilter()">Clear</button>
+            </div>
+            <table id="paymentTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Course</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- ATTENDANCE -->
+        <div id="attendance" class="tab">
+            <h2>📅 Attendance Management</h2>
+            <form id="attForm" class="card">
+                <h3>Mark Attendance</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <select id="attCourse" required>
+                        <option value="">Select Course</option>
+                    </select>
+                    <input type="date" id="attDate" required>
+                </div>
+                <p style="margin: 15px 0 10px 0; font-weight: bold;">Select Students:</p>
+                <div class="attendance-grid" id="attStudentGrid"></div>
+                <select id="attStatus" required style="margin-top: 15px;">
+                    <option value="">Select Status</option>
+                    <option value="Present">✓ Present</option>
+                    <option value="Absent">✗ Absent</option>
+                    <option value="Leave">📋 Leave</option>
+                </select>
+                <button type="submit" class="primary" style="margin-top: 15px;">✓ Save Attendance</button>
+            </form>
+
+            <h3>Attendance Records</h3>
+            <div class="filter-section">
+                <input type="text" id="attFilter" placeholder="🔍 Search...">
+                <button class="secondary" onclick="clearAttFilter()">Clear</button>
+            </div>
+            <table id="attTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Course</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- EXAMS -->
+        <div id="exams" class="tab">
+            <h2>📝 Exams & Marks</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <form id="examForm" class="card">
+                    <h3>Create Exam</h3>
+                    <input type="hidden" id="examId">
+                    <input type="text" id="examName" placeholder="Exam Name" required>
+                    <select id="examCourse" required>
+                        <option value="">Select Course</option>
+                    </select>
+                    <input type="date" id="examDate" required>
+                    <input type="number" id="maxMarks" placeholder="Max Marks" required>
+                    <button type="submit" class="primary">📝 Create Exam</button>
+                </form>
+
+                <form id="marksForm" class="card">
+                    <h3>Enter Marks</h3>
+                    <select id="marksExam" required>
+                        <option value="">Select Exam</option>
+                    </select>
+                    <select id="marksStudent" required>
+                        <option value="">Select Student</option>
+                    </select>
+                    <input type="number" id="marksObtained" placeholder="Marks Obtained" required>
+                    <button type="submit" class="primary">✓ Save Marks</button>
+                </form>
+            </div>
+
+            <h3>Exam Results & Performance</h3>
+            <div id="resultsDiv"></div>
+        </div>
+
+        <!-- SCHEDULE -->
+        <div id="schedule" class="tab">
+            <h2>⏰ Class Schedule</h2>
+            <form id="scheduleForm" class="card">
+                <h3>Add Class Schedule</h3>
+                <input type="hidden" id="schedId">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <select id="schedCourse" required>
+                        <option value="">Select Course</option>
+                    </select>
+                    <select id="schedDay" required>
+                        <option value="">Select Day</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                    </select>
+                    <input type="time" id="schedStart" placeholder="Start Time" required>
+                    <input type="time" id="schedEnd" placeholder="End Time" required>
+                </div>
+                <textarea id="schedNotes" placeholder="Notes/Room Number" rows="2"></textarea>
+                <button type="submit" class="primary">✓ Save Schedule</button>
+            </form>
+
+            <h3>Weekly Schedule</h3>
+            <div id="scheduleTable"></div>
+        </div>
+
+        <!-- REPORTS -->
+        <div id="reports" class="tab">
+            <h2>📈 Reports & Analytics</h2>
+            <div class="button-group">
+                <button class="secondary" onclick="generateReportPDF()">📄 PDF Report</button>
+                <button class="secondary" onclick="exportReportsCSV()">📊 Export CSV</button>
+                <button class="secondary" onclick="printReports()">🖨️ Print</button>
+            </div>
+            <div class="card" id="reportContent"></div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeSettings()">&times;</span>
+                <h3>⚙️ Settings</h3>
+
+                <div class="form-group">
+                    <label><strong>🎨 Theme Color:</strong></label>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <div style="width: 30px; height: 30px; background: #1abc9c; border-radius: 50%; cursor: pointer; border: 2px solid #1abc9c;" onclick="changeTheme('teal')"></div>
+                        <div style="width: 30px; height: 30px; background: #3498db; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('blue')"></div>
+                        <div style="width: 30px; height: 30px; background: #e74c3c; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('red')"></div>
+                        <div style="width: 30px; height: 30px; background: #f39c12; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('orange')"></div>
+                        <div style="width: 30px; height: 30px; background: #9b59b6; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('purple')"></div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 20px;">📊 Data Management</h3>
+                <button class="secondary" onclick="exportDataJSON()" style="width: 100%; margin-bottom: 10px;">📥 Export JSON</button>
+                <button class="secondary" onclick="exportDataCSV()" style="width: 100%; margin-bottom: 10px;">📄 Export CSV</button>
+                <button class="secondary" onclick="importData()" style="width: 100%; margin-bottom: 10px;">📤 Import Data</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+
+                <h3 style="margin-top: 20px;">⚠️ Backup & Restore</h3>
+                <button class="secondary" onclick="backupData()" style="width: 100%; margin-bottom: 10px;">💾 Backup Now</button>
+                <button class="secondary" onclick="restoreData()" style="width: 100%; margin-bottom: 10px;">📂 Restore Backup</button>
+
+                <h3 style="margin-top: 20px; color: var(--danger);">⚠️ Danger Zone</h3>
+                <button class="danger" onclick="clearAllData()" style="width: 100%; margin-top: 10px;">🗑️ Clear All Data</button>
+            </div>
+        </div>
     </div>
-    <input type="text" id="tSubjects" placeholder="Subjects (comma separated)" required>
-    <button type="submit" class="primary">💾 Save Teacher</button>
-  </form>
-  <table id="teacherTable"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Subjects</th><th>Qualification</th><th>Actions</th></tr></thead><tbody></tbody></table>
-</div>
-
-<!-- COURSES -->
-<div id="courses" class="tab">
-  <h2>📚 Courses / Subjects</h2>
-  <div class="filter-section">
-    <input type="text" id="courseFilter" placeholder="🔍 Search courses...">
-    <button class="secondary" onclick="clearCourseFilter()">Clear</button>
-  </div>
-  
-  <form id="courseForm" class="card">
-    <h3>Add/Edit Course</h3>
-    <input type="hidden" id="cId">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <input type="text" id="cName" placeholder="Course Name" required>
-      <input type="number" id="cFee" placeholder="Fee (₹)" required>
-      <select id="cTeacher"><option value="">Select Teacher</option></select>
-      <input type="text" id="cDuration" placeholder="Duration (e.g., 3 months)">
-    </div>
-    <textarea id="cDescription" placeholder="Course Description" rows="3"></textarea>
-    <button type="submit" class="primary">💾 Save Course</button>
-  </form>
-  <table id="courseTable"><thead><tr><th>ID</th><th>Name</th><th>Fee</th><th>Teacher</th><th>Duration</th><th>Students</th><th>Actions</th></tr></thead><tbody></tbody></table>
-</div>
-
-<!-- FEES -->
-<div id="fees" class="tab">
-  <h2>💰 Fee Management</h2>
-  <div class="stats">
-    <div class="stat-item">
-      <div class="stat-label">Total Collected</div>
-      <div class="stat-value" id="totalCollected">₹0</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Pending Fees</div>
-      <div class="stat-value" id="pendingFees">₹0</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Collection %</div>
-      <div class="stat-value" id="collectionRate">0%</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Total Expected</div>
-      <div class="stat-value" id="totalExpected">₹0</div>
-    </div>
-  </div>
-  
-  <form id="paymentForm" class="card">
-    <h3>Record Payment</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <select id="payStudent" required><option value="">Select Student</option></select>
-      <select id="payCourse" required><option value="">Select Course</option></select>
-      <input type="number" id="payAmount" placeholder="Amount" required>
-      <input type="date" id="payDate" required>
-    </div>
-    <button type="submit" class="primary">✓ Record Payment</button>
-  </form>
-  
-  <h3>Payment History</h3>
-  <div class="filter-section">
-    <input type="text" id="feeFilter" placeholder="🔍 Search payments...">
-    <button class="secondary" onclick="clearFeeFilter()">Clear</button>
-  </div>
-  <table id="paymentTable"><thead><tr><th>Student</th><th>Course</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
-</div>
-
-<!-- ATTENDANCE -->
-<div id="attendance" class="tab">
-  <h2>📅 Attendance Management</h2>
-  <form id="attForm" class="card">
-    <h3>Mark Attendance</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <select id="attCourse" required><option value="">Select Course</option></select>
-      <input type="date" id="attDate" required>
-    </div>
-    <p style="margin: 15px 0 10px 0; font-weight: bold;">Select Students:</p>
-    <div class="attendance-grid" id="attStudentGrid"></div>
-    <select id="attStatus" required style="margin-top: 15px;">
-      <option value="">Select Status</option>
-      <option value="Present">✓ Present</option>
-      <option value="Absent">✗ Absent</option>
-      <option value="Leave">📋 Leave</option>
-    </select>
-    <button type="submit" class="primary" style="margin-top: 15px;">✓ Save Attendance</button>
-  </form>
-  
-  <h3>Attendance Records</h3>
-  <div class="filter-section">
-    <input type="text" id="attFilter" placeholder="🔍 Search...">
-    <button class="secondary" onclick="clearAttFilter()">Clear</button>
-  </div>
-  <table id="attTable"><thead><tr><th>Student</th><th>Course</th><th>Date</th><th>Status</th></tr></thead><tbody></tbody></table>
-</div>
-
-<!-- EXAMS -->
-<div id="exams" class="tab">
-  <h2>📝 Exams & Marks</h2>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-    <form id="examForm" class="card">
-      <h3>Create Exam</h3>
-      <input type="hidden" id="examId">
-      <input type="text" id="examName" placeholder="Exam Name" required>
-      <select id="examCourse" required><option value="">Select Course</option></select>
-      <input type="date" id="examDate" required>
-      <input type="number" id="maxMarks" placeholder="Max Marks" required>
-      <button type="submit" class="primary">�� Create Exam</button>
-    </form>
-    
-    <form id="marksForm" class="card">
-      <h3>Enter Marks</h3>
-      <select id="marksExam" required><option value="">Select Exam</option></select>
-      <select id="marksStudent" required><option value="">Select Student</option></select>
-      <input type="number" id="marksObtained" placeholder="Marks Obtained" required>
-      <button type="submit" class="primary">✓ Save Marks</button>
-    </form>
-  </div>
-  
-  <h3>Exam Results & Performance</h3>
-  <div id="resultsDiv"></div>
-</div>
-
-<!-- SCHEDULE -->
-<div id="schedule" class="tab">
-  <h2>⏰ Class Schedule</h2>
-  <form id="scheduleForm" class="card">
-    <h3>Add Class Schedule</h3>
-    <input type="hidden" id="schedId">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <select id="schedCourse" required><option value="">Select Course</option></select>
-      <select id="schedDay" required><option value="">Select Day</option>
-        <option value="Monday">Monday</option>
-        <option value="Tuesday">Tuesday</option>
-        <option value="Wednesday">Wednesday</option>
-        <option value="Thursday">Thursday</option>
-        <option value="Friday">Friday</option>
-        <option value="Saturday">Saturday</option>
-      </select>
-      <input type="time" id="schedStart" placeholder="Start Time" required>
-      <input type="time" id="schedEnd" placeholder="End Time" required>
-    </div>
-    <textarea id="schedNotes" placeholder="Notes/Room Number" rows="2"></textarea>
-    <button type="submit" class="primary">✓ Save Schedule</button>
-  </form>
-  
-  <h3>Weekly Schedule</h3>
-  <div id="scheduleTable"></div>
-</div>
-
-<!-- REPORTS -->
-<div id="reports" class="tab">
-  <h2>📈 Reports & Analytics</h2>
-  <div class="button-group">
-    <button class="secondary" onclick="generateReportPDF()">📄 PDF Report</button>
-    <button class="secondary" onclick="exportReportsCSV()">📊 Export CSV</button>
-    <button class="secondary" onclick="printReports()">🖨️ Print</button>
-  </div>
-  <div class="card" id="reportContent"></div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div id="settingsModal" class="modal">
-  <div class="modal-content">
-    <span class="close-modal" onclick="closeSettings()">&times;</span>
-    <h3>⚙️ Settings</h3>
-    
-    <div class="form-group">
-      <label><strong>🎨 Theme Color:</strong></label>
-      <div style="display: flex; gap: 10px; margin-top: 10px;">
-        <div style="width: 30px; height: 30px; background: #1abc9c; border-radius: 50%; cursor: pointer; border: 2px solid #1abc9c;" onclick="changeTheme('teal')"></div>
-        <div style="width: 30px; height: 30px; background: #3498db; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('blue')"></div>
-        <div style="width: 30px; height: 30px; background: #e74c3c; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('red')"></div>
-        <div style="width: 30px; height: 30px; background: #f39c12; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('orange')"></div>
-        <div style="width: 30px; height: 30px; background: #9b59b6; border-radius: 50%; cursor: pointer; border: 2px solid #ddd;" onclick="changeTheme('purple')"></div>
-      </div>
-    </div>
-    
-    <h3 style="margin-top: 20px;">📊 Data Management</h3>
-    <button class="secondary" onclick="exportDataJSON()" style="width: 100%; margin-bottom: 10px;">📥 Export JSON</button>
-    <button class="secondary" onclick="exportDataCSV()" style="width: 100%; margin-bottom: 10px;">📄 Export CSV</button>
-    <button class="secondary" onclick="importData()" style="width: 100%; margin-bottom: 10px;">📤 Import Data</button>
-    <input type="file" id="importFile" accept=".json" style="display: none;">
-    
-    <h3 style="margin-top: 20px;">⚠️ Backup & Restore</h3>
-    <button class="secondary" onclick="backupData()" style="width: 100%; margin-bottom: 10px;">💾 Backup Now</button>
-    <button class="secondary" onclick="restoreData()" style="width: 100%; margin-bottom: 10px;">📂 Restore Backup</button>
-    
-    <h3 style="margin-top: 20px; color: var(--danger);">⚠️ Danger Zone</h3>
-    <button class="danger" onclick="clearAllData()" style="width: 100%; margin-top: 10px;">🗑️ Clear All Data</button>
-  </div>
-</div>
-
-<script>
-// ==================== THEME MANAGEMENT ====================
-const THEME_COLORS = {
-  teal: { primary: '#1abc9c', secondary: '#2c3e50', tertiary: '#34495e' },
-  blue: { primary: '#3498db', secondary: '#2c3e50', tertiary: '#34495e' },
-  red: { primary: '#e74c3c', secondary: '#2c3e50', tertiary: '#34495e' },
-  orange: { primary: '#f39c12', secondary: '#2c3e50', tertiary: '#34495e' },
-  purple: { primary: '#9b59b6', secondary: '#2c3e50', tertiary: '#34495e' }
-};
-
-function changeTheme(theme) {
-  const colors = THEME_COLORS[theme] || THEME_COLORS.teal;
-  document.documentElement.style.setProperty('--primary', colors.primary);
-  document.documentElement.style.setProperty('--secondary', colors.secondary);
-  document.documentElement.style.setProperty('--tertiary', colors.tertiary);
-  localStorage.setItem('theme', theme);
-  showNotification('✓ Theme updated!');
-}
-
-function toggleDarkMode() {
-  document.body.classList.toggle('dark-mode');
-  localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-  showNotification(document.body.classList.contains('dark-mode') ? '🌙 Dark mode ON' : '☀️ Light mode ON');
-}
-
-function initTheme() {
-  const theme = localStorage.getItem('theme') || 'teal';
-  const darkMode = localStorage.getItem('darkMode') === 'true';
-  if (darkMode) document.body.classList.add('dark-mode');
-  const colors = THEME_COLORS[theme] || THEME_COLORS.teal;
-  document.documentElement.style.setProperty('--primary', colors.primary);
-  document.documentElement.style.setProperty('--secondary', colors.secondary);
-  document.documentElement.style.setProperty('--tertiary', colors.tertiary);
-}
-
-function showNotification(message) {
-  const notif = document.createElement('div');
-  notif.className = 'notification';
-  notif.textContent = message;
-  document.body.appendChild(notif);
-  setTimeout(() => notif.remove(), 3000);
-}
-
-function openSettings() {
-  document.getElementById('settingsModal').style.display = 'block';
-}
-
-function closeSettings() {
-  document.getElementById('settingsModal').style.display = 'none';
-}
-
-window.onclick = function(event) {
-  const modal = document.getElementById('settingsModal');
-  if (event.target === modal) modal.style.display = 'none';
-}
-
-// ==================== DATA STORAGE ====================
-let DB = JSON.parse(localStorage.getItem('av_tuitions')) || {
-  students: {},
-  teachers: {},
-  courses: {},
-  fees: [],
-  attendance: [],
-  exams: {},
-  marks: [],
-  schedule: []
-};
-
-let nextId = { s: 1, t: 1, c: 1, f: 1, a: 1, e: 1, sc: 1 };
-if(localStorage.getItem('av_nextId')) nextId = JSON.parse(localStorage.getItem('av_nextId'));
-
-let selectedAttendanceStudents = [];
-
-function save() {
-  localStorage.setItem('av_tuitions', JSON.stringify(DB));
-  localStorage.setItem('av_nextId', JSON.stringify(nextId));
-}
-
-function generateId(type) {
-  const id = type + nextId[type]++;
-  save();
-  return id;
-}
-
-// ==================== GRADE CALCULATION ====================
-function calculateGrade(marks, maxMarks) {
-  const percentage = (marks / maxMarks) * 100;
-  if (percentage >= 90) return 'A';
-  if (percentage >= 80) return 'B';
-  if (percentage >= 70) return 'C';
-  if (percentage >= 60) return 'D';
-  return 'F';
-}
-
-function getStudentGPA(studentId) {
-  const studentMarks = DB.marks.filter(m => {
-    const exam = DB.exams[m.examId];
-    return m.studentId === studentId && exam;
-  });
-  
-  if (studentMarks.length === 0) return 0;
-  
-  let total = 0;
-  studentMarks.forEach(m => {
-    const exam = DB.exams[m.examId];
-    const grade = calculateGrade(m.marks, exam.maxMarks);
-    const gradePoint = {A: 4, B: 3, C: 2, D: 1, F: 0}[grade];
-    total += gradePoint;
-  });
-  
-  return (total / studentMarks.length).toFixed(2);
-}
-
-// ==================== UTILS ====================
-function getStudentName(sid) { return DB.students[sid]?.name || 'Unknown'; }
-function getCourseName(cid) { return DB.courses[cid]?.name || 'Unknown'; }
-function getTeacherName(tid) { return DB.teachers[tid]?.name || 'Not assigned'; }
-function getTotalFee(cid) { return DB.courses[cid]?.fee || 0; }
-function getPaidSoFar(studentId, courseId) {
-  return DB.fees.filter(f => f.studentId === studentId && f.courseId === courseId)
-         .reduce((sum, f) => sum + f.amount, 0);
-}
-function getDueAmount(studentId, courseId) {
-  return getTotalFee(courseId) - getPaidSoFar(studentId, courseId);
-}
-
-// ==================== UI SWITCHING ====================
-document.querySelectorAll('.tablink').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tablink').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-    refreshActiveTab();
-  });
-});
-
-function refreshActiveTab() {
-  const tab = document.querySelector('.tab.active').id;
-  switch(tab) {
-    case 'dashboard': loadDashboard(); break;
-    case 'students': refreshStudentTable(); populateStudentCourseSelect(); break;
-    case 'teachers': refreshTeacherTable(); break;
-    case 'courses': refreshCourseTable(); populateTeacherSelect(); populateCourseSelects(); break;
-    case 'fees': refreshFeeTab(); break;
-    case 'attendance': refreshAttendanceTab(); break;
-    case 'exams': refreshExamsTab(); break;
-    case 'schedule': refreshScheduleTab(); break;
-    case 'reports': loadReports(); break;
-  }
-}
-
-// ==================== DASHBOARD ====================
-function loadDashboard() {
-  const totalStudents = Object.keys(DB.students).length;
-  const totalTeachers = Object.keys(DB.teachers).length;
-  const totalCourses = Object.keys(DB.courses).length;
-  let pendingAmount = 0;
-  let totalCollected = DB.fees.reduce((sum, f) => sum + f.amount, 0);
-  let totalExpected = 0;
-
-  for (let sid in DB.students) {
-    const student = DB.students[sid];
-    (student.courses || []).forEach(cid => {
-      const fee = getTotalFee(cid);
-      totalExpected += fee;
-      pendingAmount += Math.max(0, getDueAmount(sid, cid));
-    });
-  }
-
-  const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
-
-  document.getElementById('dashCards').innerHTML = `
-    <div class="mini-card">
-      <div class="number">${totalStudents}</div>
-      <div style="font-size: 0.9em; margin-top: 5px;">👥 Students</div>
-    </div>
-    <div class="mini-card">
-      <div class="number">${totalTeachers}</div>
-      <div style="font-size: 0.9em; margin-top: 5px;">👨‍🏫 Teachers</div>
-    </div>
-    <div class="mini-card">
-      <div class="number">${totalCourses}</div>
-      <div style="font-size: 0.9em; margin-top: 5px;">📚 Courses</div>
-    </div>
-    <div class="mini-card">
-      <div class="number">₹${totalCollected}</div>
-      <div style="font-size: 0.9em; margin-top: 5px;">💚 Collected</div>
-    </div>
-    <div class="mini-card">
-      <div class="number">₹${pendingAmount}</div>
-      <div style="font-size: 0.9em; margin-top: 5px;">⏳ Pending</div>
-    </div>
-    <div class="mini-card">
-      <div class="number">${collectionRate}%</div>
-      <div style="font-size: 0.9em; margin-top: 5px;">📊 Rate</div>
-    </div>
-  `;
-
-  document.getElementById('dashStats').innerHTML = `
-    <div class="stat-item">
-      <div class="stat-label">Total Expected</div>
-      <div class="stat-value">₹${totalExpected}</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Total Collected</div>
-      <div class="stat-value">₹${totalCollected}</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Pending Fees</div>
-      <div class="stat-value">₹${pendingAmount}</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-label">Collection Rate</div>
-      <div class="stat-value">${collectionRate}%</div>
-    </div>
-  `;
-
-  const recent = DB.fees.slice(-5).reverse();
-  let html = '<h3>Recent Payments</h3><table><tr><th>Student</th><th>Course</th><th>Amount</th><th>Date</th></tr>';
-  if (recent.length === 0) {
-    html += '<tr><td colspan="4" style="text-align: center; padding: 20px;">No payments yet</td></tr>';
-  } else {
-    recent.forEach(f => {
-      html += `<tr><td>${getStudentName(f.studentId)}</td><td>${getCourseName(f.courseId)}</td><td>₹${f.amount}</td><td>${f.date}</td></tr>`;
-    });
-  }
-  html += '</table>';
-  document.getElementById('recentFees').innerHTML = html;
-
-  // Draw revenue chart
-  drawRevenueChart();
-}
-
-function drawRevenueChart() {
-  const ctx = document.getElementById('revenueChart');
-  if (!ctx) return;
-  
-  const monthlyData = {};
-  DB.fees.forEach(f => {
-    const month = f.date.substring(0, 7);
-    monthlyData[month] = (monthlyData[month] || 0) + f.amount;
-  });
-
-  const labels = Object.keys(monthlyData).sort();
-  const data = labels.map(m => monthlyData[m]);
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels.length ? labels : ['No Data'],
-      datasets: [{
-        label: 'Revenue (₹)',
-        data: data.length ? data : [0],
-        backgroundColor: 'var(--primary)',
-        borderColor: 'var(--primary)',
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: true } },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
-}
-
-// ==================== STUDENTS ====================
-function refreshStudentTable() {
-  const tbody = document.querySelector('#studentTable tbody');
-  tbody.innerHTML = '';
-  const studentFilter = document.getElementById('studentFilter').value.toLowerCase();
-  
-  for (let id in DB.students) {
-    const s = DB.students[id];
-    if (studentFilter && !s.name.toLowerCase().includes(studentFilter)) continue;
-    
-    const gpa = getStudentGPA(id);
-    const courseNames = (s.courses || []).map(cid => getCourseName(cid)).join(', ');
-    tbody.innerHTML += `
-      <tr>
-        <td>${id}</td>
-        <td><strong>${s.name}</strong></td>
-        <td>${s.phone || '-'}</td>
-        <td>${s.class || '-'}</td>
-        <td>${courseNames}</td>
-        <td><span class="grade-badge grade-${gpa >= 3 ? 'a' : gpa >= 2 ? 'b' : 'c'}">GPA: ${gpa}</span></td>
-        <td>
-          <button onclick="editStudent('${id}')" class="small primary">✎ Edit</button>
-          <button onclick="deleteStudent('${id}')" class="small danger">🗑️ Del</button>
-        </td>
-      </tr>`;
-  }
-  if (tbody.children.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No students found</td></tr>';
-  }
-}
-
-document.getElementById('studentFilter').addEventListener('input', refreshStudentTable);
-
-function editStudent(id) {
-  const s = DB.students[id];
-  document.getElementById('sId').value = id;
-  document.getElementById('sName').value = s.name;
-  document.getElementById('sPhone').value = s.phone || '';
-  document.getElementById('sEmail').value = s.email || '';
-  document.getElementById('sClass').value = s.class || '';
-  const select = document.getElementById('sCourses');
-  for (let option of select.options) {
-    option.selected = (s.courses || []).includes(option.value);
-  }
-  window.scrollTo(0, 0);
-  showNotification('📝 Editing student: ' + s.name);
-}
-
-function deleteStudent(id) {
-  if (confirm('Delete this student? This will remove all related data.')) {
-    delete DB.students[id];
-    DB.fees = DB.fees.filter(f => f.studentId !== id);
-    DB.attendance = DB.attendance.filter(a => a.studentId !== id);
-    DB.marks = DB.marks.filter(m => m.studentId !== id);
-    save();
-    refreshStudentTable();
-    loadDashboard();
-    showNotification('🗑️ Student deleted!');
-  }
-}
-
-document.getElementById('studentForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const id = document.getElementById('sId').value;
-  const name = document.getElementById('sName').value;
-  const phone = document.getElementById('sPhone').value;
-  const email = document.getElementById('sEmail').value;
-  const sClass = document.getElementById('sClass').value;
-  const selected = Array.from(document.getElementById('sCourses').selectedOptions).map(o => o.value);
-  
-  if (id) {
-    DB.students[id].name = name;
-    DB.students[id].phone = phone;
-    DB.students[id].email = email;
-    DB.students[id].class = sClass;
-    DB.students[id].courses = selected;
-    showNotification('✓ Student updated!');
-  } else {
-    const newId = generateId('s');
-    DB.students[newId] = { name, phone, email, class: sClass, courses: selected };
-    showNotification('✓ New student added!');
-  }
-  save();
-  this.reset();
-  document.getElementById('sId').value = '';
-  refreshStudentTable();
-  loadDashboard();
-});
-
-function populateStudentCourseSelect() {
-  const select = document.getElementById('sCourses');
-  select.innerHTML = '<option value="">-- Select Courses --</option>';
-  for (let cid in DB.courses) {
-    const opt = document.createElement('option');
-    opt.value = cid;
-    opt.textContent = DB.courses[cid].name + ' (₹' + DB.courses[cid].fee + ')';
-    select.appendChild(opt);
-  }
-}
-
-function clearStudentFilter() {
-  document.getElementById('studentFilter').value = '';
-  refreshStudentTable();
-}
-
-// ==================== TEACHERS ====================
-function refreshTeacherTable() {
-  const tbody = document.querySelector('#teacherTable tbody');
-  tbody.innerHTML = '';
-  const teacherFilter = document.getElementById('teacherFilter').value.toLowerCase();
-  
-  for (let id in DB.teachers) {
-    const t = DB.teachers[id];
-    if (teacherFilter && !t.name.toLowerCase().includes(teacherFilter)) continue;
-    
-    tbody.innerHTML += `
-      <tr>
-        <td>${id}</td>
-        <td><strong>${t.name}</strong></td>
-        <td>${t.email}</td>
-        <td>${(t.subjects || []).join(', ')}</td>
-        <td>${t.qualification || '-'}</td>
-        <td>
-          <button onclick="editTeacher('${id}')" class="small primary">✎ Edit</button>
-          <button onclick="deleteTeacher('${id}')" class="small danger">🗑️ Del</button>
-        </td>
-      </tr>`;
-  }
-  if (tbody.children.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No teachers found</td></tr>';
-  }
-}
-
-document.getElementById('teacherFilter').addEventListener('input', refreshTeacherTable);
-
-function editTeacher(id) {
-  const t = DB.teachers[id];
-  document.getElementById('tId').value = id;
-  document.getElementById('tName').value = t.name;
-  document.getElementById('tEmail').value = t.email;
-  document.getElementById('tPhone').value = t.phone || '';
-  document.getElementById('tQualification').value = t.qualification || '';
-  document.getElementById('tSubjects').value = (t.subjects || []).join(', ');
-  window.scrollTo(0, 0);
-}
-
-function deleteTeacher(id) {
-  if (confirm('Delete this teacher?')) {
-    delete DB.teachers[id];
-    for (let cid in DB.courses) {
-      if (DB.courses[cid].teacherId === id) DB.courses[cid].teacherId = null;
-    }
-    save();
-    refreshTeacherTable();
-    showNotification('🗑️ Teacher deleted!');
-  }
-}
-
-document.getElementById('teacherForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const id = document.getElementById('tId').value;
-  const name = document.getElementById('tName').value;
-  const email = document.getElementById('tEmail').value;
-  const phone = document.getElementById('tPhone').value;
-  const qualification = document.getElementById('tQualification').value;
-  const subjects = document.getElementById('tSubjects').value.split(',').map(s => s.trim()).filter(s => s);
-  
-  if (id) {
-    DB.teachers[id].name = name;
-    DB.teachers[id].email = email;
-    DB.teachers[id].phone = phone;
-    DB.teachers[id].qualification = qualification;
-    DB.teachers[id].subjects = subjects;
-    showNotification('✓ Teacher updated!');
-  } else {
-    const newId = generateId('t');
-    DB.teachers[newId] = { name, email, phone, qualification, subjects };
-    showNotification('✓ New teacher added!');
-  }
-  save();
-  this.reset();
-  document.getElementById('tId').value = '';
-  refreshTeacherTable();
-});
-
-function populateTeacherSelect() {
-  const select = document.getElementById('cTeacher');
-  select.innerHTML = '<option value="">Select Teacher</option>';
-  for (let tid in DB.teachers) {
-    select.innerHTML += `<option value="${tid}">${DB.teachers[tid].name}</option>`;
-  }
-}
-
-function clearTeacherFilter() {
-  document.getElementById('teacherFilter').value = '';
-  refreshTeacherTable();
-}
-
-// ==================== COURSES ====================
-function refreshCourseTable() {
-  const tbody = document.querySelector('#courseTable tbody');
-  tbody.innerHTML = '';
-  const courseFilter = document.getElementById('courseFilter').value.toLowerCase();
-  
-  for (let cid in DB.courses) {
-    const c = DB.courses[cid];
-    if (courseFilter && !c.name.toLowerCase().includes(courseFilter)) continue;
-    
-    let studentCount = 0;
-    for (let sid in DB.students) {
-      if ((DB.students[sid].courses || []).includes(cid)) studentCount++;
-    }
-    
-    tbody.innerHTML += `
-      <tr>
-        <td>${cid}</td>
-        <td><strong>${c.name}</strong></td>
-        <td>₹${c.fee}</td>
-        <td>${getTeacherName(c.teacherId)}</td>
-        <td>${c.duration || '-'}</td>
-        <td><strong>${studentCount}</strong></td>
-        <td>
-          <button onclick="editCourse('${cid}')" class="small primary">✎ Edit</button>
-          <button onclick="deleteCourse('${cid}')" class="small danger">🗑️ Del</button>
-        </td>
-      </tr>`;
-  }
-  if (tbody.children.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No courses found</td></tr>';
-  }
-}
-
-function editCourse(id) {
-  const c = DB.courses[id];
-  document.getElementById('cId').value = id;
-  document.getElementById('cName').value = c.name;
-  document.getElementById('cFee').value = c.fee;
-  document.getElementById('cTeacher').value = c.teacherId || '';
-  document.getElementById('cDuration').value = c.duration || '';
-  document.getElementById('cDescription').value = c.description || '';
-  window.scrollTo(0, 0);
-}
-
-function deleteCourse(id) {
-  if (confirm('Delete this course? This will remove it from all students.')) {
-    for (let sid in DB.students) {
-      const idx = (DB.students[sid].courses || []).indexOf(id);
-      if (idx > -1) DB.students[sid].courses.splice(idx, 1);
-    }
-    DB.fees = DB.fees.filter(f => f.courseId !== id);
-    DB.attendance = DB.attendance.filter(a => a.courseId !== id);
-    for (let eid in DB.exams) {
-      if (DB.exams[eid].courseId === id) delete DB.exams[eid];
-    }
-    DB.marks = DB.marks.filter(m => {
-      const exam = DB.exams[m.examId];
-      return exam && exam.courseId !== id;
-    });
-    delete DB.courses[id];
-    save();
-    refreshCourseTable();
-    showNotification('🗑️ Course deleted!');
-  }
-}
-
-document.getElementById('courseForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const id = document.getElementById('cId').value;
-  const name = document.getElementById('cName').value;
-  const fee = parseFloat(document.getElementById('cFee').value);
-  const teacherId = document.getElementById('cTeacher').value || null;
-  const duration = document.getElementById('cDuration').value;
-  const description = document.getElementById('cDescription').value;
-  
-  if (id) {
-    DB.courses[id].name = name;
-    DB.courses[id].fee = fee;
-    DB.courses[id].teacherId = teacherId;
-    DB.courses[id].duration = duration;
-    DB.courses[id].description = description;
-    showNotification('✓ Course updated!');
-  } else {
-    const newId = generateId('c');
-    DB.courses[newId] = { name, fee, teacherId, duration, description };
-    showNotification('✓ New course added!');
-  }
-  save();
-  this.reset();
-  document.getElementById('cId').value = '';
-  refreshCourseTable();
-  populateCourseSelects();
-  populateStudentCourseSelect();
-});
-
-function populateCourseSelects() {
-  ['payCourse', 'attCourse', 'examCourse', 'schedCourse'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = '<option value="">Select Course</option>';
-    for (let cid in DB.courses) {
-      sel.innerHTML += `<option value="${cid}">${DB.courses[cid].name}</option>`;
-    }
-  });
-  
-  const payStudent = document.getElementById('payStudent');
-  if (payStudent) {
-    payStudent.innerHTML = '<option value="">Select Student</option>';
-    for (let sid in DB.students) {
-      payStudent.innerHTML += `<option value="${sid}">${DB.students[sid].name}</option>`;
-    }
-  }
-  
-  const attStudent = document.getElementById('attStudent');
-  if (attStudent) {
-    attStudent.innerHTML = '<option value="">Select Student</option>';
-    for (let sid in DB.students) {
-      attStudent.innerHTML += `<option value="${sid}">${DB.students[sid].name}</option>`;
-    }
-  }
-  
-  const marksExam = document.getElementById('marksExam');
-  if (marksExam) {
-    marksExam.innerHTML = '<option value="">Select Exam</option>';
-    for (let eid in DB.exams) {
-      const ex = DB.exams[eid];
-      marksExam.innerHTML += `<option value="${eid}">${ex.name} (${getCourseName(ex.courseId)})</option>`;
-    }
-  }
-  
-  const marksStudent = document.getElementById('marksStudent');
-  if (marksStudent) {
-    marksStudent.innerHTML = '<option value="">Select Student</option>';
-    for (let sid in DB.students) {
-      marksStudent.innerHTML += `<option value="${sid}">${DB.students[sid].name}</option>`;
-    }
-  }
-}
-
-function clearCourseFilter() {
-  document.getElementById('courseFilter').value = '';
-  refreshCourseTable();
-}
-
-// ==================== FEES ====================
-function refreshFeeTab() {
-  let totalCollected = DB.fees.reduce((sum, f) => sum + f.amount, 0);
-  let totalExpected = 0;
-  let pending = 0;
-  
-  for (let sid in DB.students) {
-    const student = DB.students[sid];
-    (student.courses || []).forEach(cid => {
-      const fee = getTotalFee(cid);
-      totalExpected += fee;
-      pending += Math.max(0, getDueAmount(sid, cid));
-    });
-  }
-  
-  const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
-  
-  document.getElementById('totalCollected').textContent = '₹' + totalCollected;
-  document.getElementById('pendingFees').textContent = '₹' + pending;
-  document.getElementById('collectionRate').textContent = collectionRate + '%';
-  document.getElementById('totalExpected').textContent = '₹' + totalExpected;
-
-  const tbody = document.querySelector('#paymentTable tbody');
-  tbody.innerHTML = '';
-  const feeFilter = document.getElementById('feeFilter').value.toLowerCase();
-  
-  DB.fees.slice().reverse().forEach(f => {
-    const studentName = getStudentName(f.studentId);
-    if (feeFilter && !studentName.toLowerCase().includes(feeFilter)) return;
-    
-    const due = getDueAmount(f.studentId, f.courseId);
-    tbody.innerHTML += `
-      <tr>
-        <td><strong>${studentName}</strong></td>
-        <td>${getCourseName(f.courseId)}</td>
-        <td>₹${f.amount}</td>
-        <td>${f.date}</td>
-        <td style="color:${due > 0 ? 'var(--danger)' : 'var(--success)'}">${due > 0 ? '⏳ Due ₹'+due : '✓ Paid'}</td>
-        <td><button onclick="deleteFee('${f.id}')" class="small danger">🗑️ Del</button></td>
-      </tr>`;
-  });
-  
-  if (tbody.children.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No payments recorded</td></tr>';
-  }
-  
-  populateCourseSelects();
-}
-
-function deleteFee(feeId) {
-  if (confirm('Delete this payment record?')) {
-    DB.fees = DB.fees.filter(f => f.id !== feeId);
-    save();
-    refreshFeeTab();
-    loadDashboard();
-    showNotification('🗑️ Payment deleted!');
-  }
-}
-
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const studentId = document.getElementById('payStudent').value;
-  const courseId = document.getElementById('payCourse').value;
-  const amount = parseFloat(document.getElementById('payAmount').value);
-  const date = document.getElementById('payDate').value;
-  
-  if (!studentId || !courseId || isNaN(amount) || !date) {
-    showNotification('⚠️ Please fill all fields!');
-    return;
-  }
-  
-  DB.fees.push({ id: generateId('f'), studentId, courseId, amount, date });
-  save();
-  this.reset();
-  refreshFeeTab();
-  loadDashboard();
-  showNotification('✓ Payment recorded!');
-});
-
-function clearFeeFilter() {
-  document.getElementById('feeFilter').value = '';
-  refreshFeeTab();
-}
-
-// ==================== ATTENDANCE ====================
-function refreshAttendanceTab() {
-  const courseId = document.getElementById('attCourse').value;
-  const attStudentGrid = document.getElementById('attStudentGrid');
-  attStudentGrid.innerHTML = '';
-  
-  if (!courseId) {
-    attStudentGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Please select a course</p>';
-    return;
-  }
-  
-  for (let sid in DB.students) {
-    const s = DB.students[sid];
-    if (!((s.courses || []).includes(courseId))) continue;
-    
-    const isSelected = selectedAttendanceStudents.includes(sid);
-    attStudentGrid.innerHTML += `
-      <div class="attendance-card ${isSelected ? 'selected' : ''}" 
-           onclick="toggleAttendanceStudent('${sid}')">
-        <strong>${s.name}</strong>
-      </div>`;
-  }
-  
-  const tbody = document.querySelector('#attTable tbody');
-  tbody.innerHTML = '';
-  const attFilter = document.getElementById('attFilter').value.toLowerCase();
-  
-  DB.attendance.slice().reverse().forEach(a => {
-    const studentName = getStudentName(a.studentId);
-    if (attFilter && !studentName.toLowerCase().includes(attFilter)) return;
-    
-    tbody.innerHTML += `
-      <tr>
-        <td><strong>${studentName}</strong></td>
-        <td>${getCourseName(a.courseId)}</td>
-        <td>${a.date}</td>
-        <td><span style="font-weight: bold;">${a.status === 'Present' ? '✓ Present' : a.status === 'Absent' ? '✗ Absent' : '📋 Leave'}</span></td>
-      </tr>`;
-  });
-  
-  if (tbody.children.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">No attendance records</td></tr>';
-  }
-}
-
-function toggleAttendanceStudent(studentId) {
-  const idx = selectedAttendanceStudents.indexOf(studentId);
-  if (idx > -1) {
-    selectedAttendanceStudents.splice(idx, 1);
-  } else {
-    selectedAttendanceStudents.push(studentId);
-  }
-  refreshAttendanceTab();
-}
-
-document.getElementById('attCourse').addEventListener('change', refreshAttendanceTab);
-
-document.getElementById('attForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const courseId = document.getElementById('attCourse').value;
-  const date = document.getElementById('attDate').value;
-  const status = document.getElementById('attStatus').value;
-  
-  if (!courseId || !date || !status || selectedAttendanceStudents.length === 0) {
-    showNotification('⚠️ Please select course, date, status and students!');
-    return;
-  }
-  
-  selectedAttendanceStudents.forEach(studentId => {
-    DB.attendance.push({ id: generateId('a'), studentId, courseId, date, status });
-  });
-  
-  save();
-  selectedAttendanceStudents = [];
-  this.reset();
-  refreshAttendanceTab();
-  showNotification('✓ Attendance saved for ' + selectedAttendanceStudents.length + ' students!');
-});
-
-function clearAttFilter() {
-  document.getElementById('attFilter').value = '';
-  refreshAttendanceTab();
-}
-
-// ==================== EXAMS ====================
-function refreshExamsTab() {
-  populateCourseSelects();
-  
-  const container = document.getElementById('resultsDiv');
-  container.innerHTML = '';
-  
-  let hasExams = false;
-  for (let eid in DB.exams) {
-    hasExams = true;
-    const exam = DB.exams[eid];
-    const marksForExam = DB.marks.filter(m => m.examId === eid);
-    
-    let html = `<div class="card">
-      <h3>${exam.name}</h3>
-      <p><strong>Course:</strong> ${getCourseName(exam.courseId)} | <strong>Date:</strong> ${exam.date} | <strong>Max Marks:</strong> ${exam.maxMarks}</p>`;
-    
-    if (marksForExam.length) {
-      html += '<table><tr><th>Student</th><th>Marks</th><th>%</th><th>Grade</th></tr>';
-      const sortedMarks = marksForExam.sort((a, b) => b.marks - a.marks);
-      sortedMarks.forEach((m, idx) => {
-        const percentage = ((m.marks / exam.maxMarks) * 100).toFixed(2);
-        const grade = calculateGrade(m.marks, exam.maxMarks);
-        html += `<tr ${idx === 0 ? 'style="background: var(--success); color: white;"' : ''}>
-          <td>${getStudentName(m.studentId)}</td>
-          <td>${m.marks}</td>
-          <td>${percentage}%</td>
-          <td><span class="grade-badge grade-${grade.toLowerCase()}">${grade}</span></td>
-        </tr>`;
-      });
-      html += '</table>';
-    } else {
-      html += '<p style="text-align: center; padding: 20px; color: var(--text-light);">No marks entered</p>';
-    }
-    
-    html += `<button onclick="deleteExam('${eid}')" class="small danger" style="margin-top: 10px;">🗑️ Delete Exam</button>
-    </div>`;
-    container.innerHTML += html;
-  }
-  
-  if (!hasExams) {
-    container.innerHTML = '<div class="no-data"><p>No exams created yet</p></div>';
-  }
-}
-
-function deleteExam(id) {
-  if (confirm('Delete this exam and all marks?')) {
-    DB.marks = DB.marks.filter(m => m.examId !== id);
-    delete DB.exams[id];
-    save();
-    refreshExamsTab();
-    showNotification('🗑️ Exam deleted!');
-  }
-}
-
-document.getElementById('examForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const name = document.getElementById('examName').value;
-  const courseId = document.getElementById('examCourse').value;
-  const date = document.getElementById('examDate').value;
-  const maxMarks = parseFloat(document.getElementById('maxMarks').value);
-  
-  if (!courseId || !name || !date || isNaN(maxMarks)) {
-    showNotification('⚠️ Please fill all fields!');
-    return;
-  }
-  
-  const newId = generateId('e');
-  DB.exams[newId] = { name, courseId, date, maxMarks };
-  save();
-  this.reset();
-  refreshExamsTab();
-  showNotification('✓ Exam created!');
-});
-
-document.getElementById('marksForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const examId = document.getElementById('marksExam').value;
-  const studentId = document.getElementById('marksStudent').value;
-  const marks = parseFloat(document.getElementById('marksObtained').value);
-  
-  if (!examId || !studentId || isNaN(marks)) {
-    showNotification('⚠️ Please fill all fields!');
-    return;
-  }
-  
-  DB.marks = DB.marks.filter(m => !(m.examId === examId && m.studentId === studentId));
-  DB.marks.push({ examId, studentId, marks });
-  save();
-  this.reset();
-  refreshExamsTab();
-  showNotification('✓ Marks saved!');
-});
-
-// ==================== SCHEDULE ====================
-function refreshScheduleTab() {
-  populateCourseSelects();
-  
-  const scheduleTable = document.getElementById('scheduleTable');
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
-  let table = '<table><tr><th>Day</th><th>Course</th><th>Time</th><th>Notes</th><th>Actions</th></tr>';
-  
-  days.forEach(day => {
-    const daySchedules = DB.schedule.filter(s => s.day === day).sort((a, b) => {
-      return a.start.localeCompare(b.start);
-    });
-    
-    if (daySchedules.length === 0) return;
-    
-    daySchedules.forEach(s => {
-      table += `<tr>
-        <td><strong>${day}</strong></td>
-        <td>${getCourseName(s.courseId)}</td>
-        <td>${s.start} - ${s.end}</td>
-        <td>${s.notes || '-'}</td>
-        <td>
-          <button onclick="deleteSchedule('${s.id}')" class="small danger">🗑️ Del</button>
-        </td>
-      </tr>`;
-    });
-  });
-  
-  table += '</table>';
-  scheduleTable.innerHTML = table.includes('<tr><td') ? table : '<p class="no-data">No schedule created</p>';
-}
-
-function deleteSchedule(id) {
-  if (confirm('Delete this schedule?')) {
-    DB.schedule = DB.schedule.filter(s => s.id !== id);
-    save();
-    refreshScheduleTab();
-    showNotification('🗑️ Schedule deleted!');
-  }
-}
-
-document.getElementById('scheduleForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const courseId = document.getElementById('schedCourse').value;
-  const day = document.getElementById('schedDay').value;
-  const start = document.getElementById('schedStart').value;
-  const end = document.getElementById('schedEnd').value;
-  const notes = document.getElementById('schedNotes').value;
-  
-  if (!courseId || !day || !start || !end) {
-    showNotification('⚠️ Please fill all required fields!');
-    return;
-  }
-  
-  const id = generateId('sc');
-  DB.schedule.push({ id, courseId, day, start, end, notes });
-  save();
-  this.reset();
-  refreshScheduleTab();
-  showNotification('✓ Schedule added!');
-});
-
-// ==================== REPORTS ====================
-function loadReports() {
-  let html = '';
-  
-  // Pending Fees Report
-  html += '<h3>📋 Pending Fees Report</h3>';
-  html += '<table><tr><th>Student</th><th>Course</th><th>Total Fee</th><th>Paid</th><th>Due</th></tr>';
-  let hasPending = false;
-  for (let sid in DB.students) {
-    const student = DB.students[sid];
-    (student.courses || []).forEach(cid => {
-      const total = getTotalFee(cid);
-      const paid = getPaidSoFar(sid, cid);
-      const due = total - paid;
-      if (due > 0) {
-        hasPending = true;
-        html += `<tr><td><strong>${student.name}</strong></td><td>${getCourseName(cid)}</td><td>₹${total}</td><td>₹${paid}</td><td style="color: var(--danger);">₹${due}</td></tr>`;
-      }
-    });
-  }
-  if (!hasPending) html += '<tr><td colspan="5" style="text-align: center; padding: 20px;">All fees paid!</td></tr>';
-  html += '</table>';
-  
-  // Attendance Summary
-  html += '<h3>📊 Attendance Summary</h3>';
-  html += '<table><tr><th>Student</th><th>Course</th><th>Present</th><th>Absent</th><th>Leave</th><th>Attendance %</th></tr>';
-  const attSummary = {};
-  DB.attendance.forEach(a => {
-    const key = a.studentId + '_' + a.courseId;
-    if (!attSummary[key]) attSummary[key] = { present: 0, absent: 0, leave: 0 };
-    if (a.status === 'Present') attSummary[key].present++;
-    else if (a.status === 'Absent') attSummary[key].absent++;
-    else attSummary[key].leave++;
-  });
-  
-  for (let key in attSummary) {
-    const [sid, cid] = key.split('_');
-    const sum = attSummary[key];
-    const total = sum.present + sum.absent;
-    const percentage = total > 0 ? Math.round((sum.present / total) * 100) : 0;
-    html += `<tr><td><strong>${getStudentName(sid)}</strong></td><td>${getCourseName(cid)}</td><td>${sum.present}</td><td>${sum.absent}</td><td>${sum.leave}</td><td>${percentage}%</td></tr>`;
-  }
-  if (Object.keys(attSummary).length === 0) html += '<tr><td colspan="6" style="text-align: center; padding: 20px;">No attendance records</td></tr>';
-  html += '</table>';
-  
-  // Performance Report
-  html += '<h3>🏆 Student Performance Report</h3>';
-  html += '<table><tr><th>Student</th><th>GPA</th><th>Total Exams</th><th>Average %</th></tr>';
-  let hasPerformance = false;
-  for (let sid in DB.students) {
-    const studentMarks = DB.marks.filter(m => m.studentId === sid);
-    if (studentMarks.length === 0) continue;
-    hasPerformance = true;
-    
-    const gpa = getStudentGPA(sid);
-    let totalPercentage = 0;
-    studentMarks.forEach(m => {
-      const exam = DB.exams[m.examId];
-      if (exam) totalPercentage += (m.marks / exam.maxMarks) * 100;
-    });
-    const avgPercentage = Math.round(totalPercentage / studentMarks.length);
-    html += `<tr><td><strong>${getStudentName(sid)}</strong></td><td><span class="grade-badge grade-${gpa >= 3 ? 'a' : gpa >= 2 ? 'b' : 'c'}">${gpa}</span></td><td>${studentMarks.length}</td><td>${avgPercentage}%</td></tr>`;
-  }
-  if (!hasPerformance) html += '<tr><td colspan="4" style="text-align: center; padding: 20px;">No exam data</td></tr>';
-  html += '</table>';
-  
-  document.getElementById('reportContent').innerHTML = html;
-}
-
-// ==================== EXPORT FUNCTIONS ====================
-function exportDataJSON() {
-  const dataStr = JSON.stringify(DB, null, 2);
-  const dataBlob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(dataBlob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'av_tuitions_' + new Date().toISOString().split('T')[0] + '.json';
-  link.click();
-  showNotification('📥 JSON exported!');
-}
-
-function exportDataCSV() {
-  let csv = 'STUDENTS\nID,Name,Phone,Class,Email,Courses\n';
-  for (let sid in DB.students) {
-    const s = DB.students[sid];
-    csv += `${sid},${s.name},${s.phone || ''},${s.class || ''},${s.email || ''},"${(s.courses || []).map(c => getCourseName(c)).join(', ')}"\n`;
-  }
-  
-  csv += '\nTEACHERS\nID,Name,Email,Phone,Subjects,Qualification\n';
-  for (let tid in DB.teachers) {
-    const t = DB.teachers[tid];
-    csv += `${tid},${t.name},${t.email},${t.phone || ''},"${(t.subjects || []).join(', ')}",${t.qualification || ''}\n`;
-  }
-  
-  csv += '\nCOURSES\nID,Name,Fee,Teacher,Duration\n';
-  for (let cid in DB.courses) {
-    const c = DB.courses[cid];
-    csv += `${cid},${c.name},${c.fee},${getTeacherName(c.teacherId)},${c.duration || ''}\n`;
-  }
-  
-  csv += '\nFEES\nStudent,Course,Amount,Date\n';
-  DB.fees.forEach(f => {
-    csv += `${getStudentName(f.studentId)},${getCourseName(f.courseId)},${f.amount},${f.date}\n`;
-  });
-  
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'av_tuitions_' + new Date().toISOString().split('T')[0] + '.csv';
-  link.click();
-  showNotification('📄 CSV exported!');
-}
-
-function generatePDF() {
-  showNotification('ℹ️ PDF export - Please use browser Print (Ctrl+P)');
-  setTimeout(() => window.print(), 500);
-}
-
-function generateReportPDF() {
-  showNotification('ℹ️ PDF report - Please use browser Print (Ctrl+P)');
-  setTimeout(() => window.print(), 500);
-}
-
-function exportReportsCSV() {
-  exportDataCSV();
-}
-
-function backupData() {
-  const backup = {
-    data: DB,
-    ids: nextId,
-    timestamp: new Date().toISOString()
-  };
-  localStorage.setItem('av_backup_' + new Date().getTime(), JSON.stringify(backup));
-  showNotification('💾 Backup created!');
-}
-
-function restoreData() {
-  const backups = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith('av_backup_')) {
-      backups.push({key, data: JSON.parse(localStorage.getItem(key))});
-    }
-  }
-  
-  if (backups.length === 0) {
-    showNotification('⚠️ No backups found!');
-    return;
-  }
-  
-  const latest = backups.sort((a, b) => b.key.localeCompare(a.key))[0];
-  if (confirm('Restore to ' + latest.data.timestamp + '?')) {
-    DB = latest.data.data;
-    nextId = latest.data.ids;
-    save();
-    showNotification('✓ Restored!');
-    location.reload();
-  }
-}
-
-function clearAllData() {
-  if (confirm('⚠️ DELETE ALL DATA? This cannot be undone!')) {
-    if (confirm('ARE YOU ABSOLUTELY SURE? This will delete EVERYTHING!')) {
-      localStorage.clear();
-      showNotification('🗑️ All data cleared!');
-      location.reload();
-    }
-  }
-}
-
-function importData() {
-  document.getElementById('importFile').click();
-}
-
-document.getElementById('importFile').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    try {
-      const imported = JSON.parse(event.target.result);
-      if (confirm('Replace current data with imported data?')) {
-        DB = imported.students ? imported : imported.data || DB;
-        save();
-        showNotification('✓ Data imported!');
-        location.reload();
-      }
-    } catch {
-      showNotification('⚠️ Invalid file format!');
-    }
-  };
-  reader.readAsText(file);
-});
-
-// ==================== INITIALIZATION ====================
-window.addEventListener('load', () => {
-  initTheme();
-  refreshActiveTab();
-});
-</script>
+
+    <!-- ============================================================
+    SCRIPTS
+    ============================================================ -->
+    <script>
+        // ============================================================
+        // PASSWORD PROTECTION LOGIC
+        // ============================================================
+        const CORRECT_PASSWORD = 'admin123'; // ← change this to your own password
+
+        const overlay = document.getElementById('passwordOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const mainApp = document.getElementById('mainApp');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        function unlockApp() {
+            overlay.classList.add('hidden');
+            mainApp.classList.add('active');
+            passwordInput.value = '';
+            loginError.textContent = '';
+            // Refresh active tab data after unlock
+            setTimeout(refreshActiveTab, 100);
+        }
+
+        function lockApp() {
+            overlay.classList.remove('hidden');
+            mainApp.classList.remove('active');
+            passwordInput.value = '';
+            loginError.textContent = '';
+            passwordInput.focus();
+        }
+
+        function handleLogin() {
+            const entered = passwordInput.value.trim();
+            if (entered === CORRECT_PASSWORD) {
+                unlockApp();
+            } else {
+                loginError.textContent = '❌ Wrong password. Try again.';
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+        passwordInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                lockApp();
+            }
+        });
+
+        // ============================================================
+        // THEME MANAGEMENT (unchanged)
+        // ============================================================
+        const THEME_COLORS = {
+            teal: { primary: '#1abc9c', secondary: '#2c3e50', tertiary: '#34495e' },
+            blue: { primary: '#3498db', secondary: '#2c3e50', tertiary: '#34495e' },
+            red: { primary: '#e74c3c', secondary: '#2c3e50', tertiary: '#34495e' },
+            orange: { primary: '#f39c12', secondary: '#2c3e50', tertiary: '#34495e' },
+            purple: { primary: '#9b59b6', secondary: '#2c3e50', tertiary: '#34495e' }
+        };
+
+        function changeTheme(theme) {
+            const colors = THEME_COLORS[theme] || THEME_COLORS.teal;
+            document.documentElement.style.setProperty('--primary', colors.primary);
+            document.documentElement.style.setProperty('--secondary', colors.secondary);
+            document.documentElement.style.setProperty('--tertiary', colors.tertiary);
+            localStorage.setItem('theme', theme);
+            showNotification('✓ Theme updated!');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            showNotification(document.body.classList.contains('dark-mode') ? '🌙 Dark mode ON' : '☀️ Light mode ON');
+        }
+
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'teal';
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) document.body.classList.add('dark-mode');
+            const colors = THEME_COLORS[theme] || THEME_COLORS.teal;
+            document.documentElement.style.setProperty('--primary', colors.primary);
+            document.documentElement.style.setProperty('--secondary', colors.secondary);
+            document.documentElement.style.setProperty('--tertiary', colors.tertiary);
+        }
+
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) modal.style.display = 'none';
+        }
+
+        // ============================================================
+        // DATA STORAGE (unchanged)
+        // ============================================================
+        let DB = JSON.parse(localStorage.getItem('av_tuitions')) || {
+            students: {},
+            teachers: {},
+            courses: {},
+            fees: [],
+            attendance: [],
+            exams: {},
+            marks: [],
+            schedule: []
+        };
+
+        let nextId = { s: 1, t: 1, c: 1, f: 1, a: 1, e: 1, sc: 1 };
+        if (localStorage.getItem('av_nextId')) nextId = JSON.parse(localStorage.getItem('av_nextId'));
+
+        let selectedAttendanceStudents = [];
+
+        function save() {
+            localStorage.setItem('av_tuitions', JSON.stringify(DB));
+            localStorage.setItem('av_nextId', JSON.stringify(nextId));
+        }
+
+        function generateId(type) {
+            const id = type + nextId[type]++;
+            save();
+            return id;
+        }
+
+        // ============================================================
+        // GRADE CALCULATION (unchanged)
+        // ============================================================
+        function calculateGrade(marks, maxMarks) {
+            const percentage = (marks / maxMarks) * 100;
+            if (percentage >= 90) return 'A';
+            if (percentage >= 80) return 'B';
+            if (percentage >= 70) return 'C';
+            if (percentage >= 60) return 'D';
+            return 'F';
+        }
+
+        function getStudentGPA(studentId) {
+            const studentMarks = DB.marks.filter(m => {
+                const exam = DB.exams[m.examId];
+                return m.studentId === studentId && exam;
+            });
+
+            if (studentMarks.length === 0) return 0;
+
+            let total = 0;
+            studentMarks.forEach(m => {
+                const exam = DB.exams[m.examId];
+                const grade = calculateGrade(m.marks, exam.maxMarks);
+                const gradePoint = { A: 4, B: 3, C: 2, D: 1, F: 0 } [grade];
+                total += gradePoint;
+            });
+
+            return (total / studentMarks.length).toFixed(2);
+        }
+
+        // ============================================================
+        // UTILS (unchanged)
+        // ============================================================
+        function getStudentName(sid) { return DB.students[sid]?.name || 'Unknown'; }
+
+        function getCourseName(cid) { return DB.courses[cid]?.name || 'Unknown'; }
+
+        function getTeacherName(tid) { return DB.teachers[tid]?.name || 'Not assigned'; }
+
+        function getTotalFee(cid) { return DB.courses[cid]?.fee || 0; }
+
+        function getPaidSoFar(studentId, courseId) {
+            return DB.fees.filter(f => f.studentId === studentId && f.courseId === courseId)
+                .reduce((sum, f) => sum + f.amount, 0);
+        }
+
+        function getDueAmount(studentId, courseId) {
+            return getTotalFee(courseId) - getPaidSoFar(studentId, courseId);
+        }
+
+        // ============================================================
+        // UI SWITCHING (unchanged)
+        // ============================================================
+        document.querySelectorAll('.tablink').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tablink').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+                refreshActiveTab();
+            });
+        });
+
+        function refreshActiveTab() {
+            const tab = document.querySelector('.tab.active')?.id;
+            if (!tab) return;
+            switch (tab) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'students':
+                    refreshStudentTable();
+                    populateStudentCourseSelect();
+                    break;
+                case 'teachers':
+                    refreshTeacherTable();
+                    break;
+                case 'courses':
+                    refreshCourseTable();
+                    populateTeacherSelect();
+                    populateCourseSelects();
+                    break;
+                case 'fees':
+                    refreshFeeTab();
+                    break;
+                case 'attendance':
+                    refreshAttendanceTab();
+                    break;
+                case 'exams':
+                    refreshExamsTab();
+                    break;
+                case 'schedule':
+                    refreshScheduleTab();
+                    break;
+                case 'reports':
+                    loadReports();
+                    break;
+            }
+        }
+
+        // ============================================================
+        // DASHBOARD (unchanged)
+        // ============================================================
+        function loadDashboard() {
+            const totalStudents = Object.keys(DB.students).length;
+            const totalTeachers = Object.keys(DB.teachers).length;
+            const totalCourses = Object.keys(DB.courses).length;
+            let pendingAmount = 0;
+            let totalCollected = DB.fees.reduce((sum, f) => sum + f.amount, 0);
+            let totalExpected = 0;
+
+            for (let sid in DB.students) {
+                const student = DB.students[sid];
+                (student.courses || []).forEach(cid => {
+                    const fee = getTotalFee(cid);
+                    totalExpected += fee;
+                    pendingAmount += Math.max(0, getDueAmount(sid, cid));
+                });
+            }
+
+            const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+
+            document.getElementById('dashCards').innerHTML = `
+            <div class="mini-card">
+              <div class="number">${totalStudents}</div>
+              <div style="font-size: 0.9em; margin-top: 5px;">👥 Students</div>
+            </div>
+            <div class="mini-card">
+              <div class="number">${totalTeachers}</div>
+              <div style="font-size: 0.9em; margin-top: 5px;">👨‍🏫 Teachers</div>
+            </div>
+            <div class="mini-card">
+              <div class="number">${totalCourses}</div>
+              <div style="font-size: 0.9em; margin-top: 5px;">📚 Courses</div>
+            </div>
+            <div class="mini-card">
+              <div class="number">₹${totalCollected}</div>
+              <div style="font-size: 0.9em; margin-top: 5px;">💚 Collected</div>
+            </div>
+            <div class="mini-card">
+              <div class="number">₹${pendingAmount}</div>
+              <div style="font-size: 0.9em; margin-top: 5px;">⏳ Pending</div>
+            </div>
+            <div class="mini-card">
+              <div class="number">${collectionRate}%</div>
+              <div style="font-size: 0.9em; margin-top: 5px;">📊 Rate</div>
+            </div>
+          `;
+
+            document.getElementById('dashStats').innerHTML = `
+            <div class="stat-item">
+              <div class="stat-label">Total Expected</div>
+              <div class="stat-value">₹${totalExpected}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Total Collected</div>
+              <div class="stat-value">₹${totalCollected}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Pending Fees</div>
+              <div class="stat-value">₹${pendingAmount}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Collection Rate</div>
+              <div class="stat-value">${collectionRate}%</div>
+            </div>
+          `;
+
+            const recent = DB.fees.slice(-5).reverse();
+            let html = '<h3>Recent Payments</h3><table><tr><th>Student</th><th>Course</th><th>Amount</th><th>Date</th></tr>';
+            if (recent.length === 0) {
+                html += '<tr><td colspan="4" style="text-align: center; padding: 20px;">No payments yet</td></tr>';
+            } else {
+                recent.forEach(f => {
+                    html +=
+                        `<tr><td>${getStudentName(f.studentId)}</td><td>${getCourseName(f.courseId)}</td><td>₹${f.amount}</td><td>${f.date}</td></tr>`;
+                });
+            }
+            html += '</table>';
+            document.getElementById('recentFees').innerHTML = html;
+
+            drawRevenueChart();
+        }
+
+        function drawRevenueChart() {
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+
+            const monthlyData = {};
+            DB.fees.forEach(f => {
+                const month = f.date.substring(0, 7);
+                monthlyData[month] = (monthlyData[month] || 0) + f.amount;
+            });
+
+            const labels = Object.keys(monthlyData).sort();
+            const data = labels.map(m => monthlyData[m]);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['No Data'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: data.length ? data : [0],
+                        backgroundColor: 'var(--primary)',
+                        borderColor: 'var(--primary)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // ============================================================
+        // STUDENTS (unchanged)
+        // ============================================================
+        function refreshStudentTable() {
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = '';
+            const studentFilter = document.getElementById('studentFilter').value.toLowerCase();
+
+            for (let id in DB.students) {
+                const s = DB.students[id];
+                if (studentFilter && !s.name.toLowerCase().includes(studentFilter)) continue;
+
+                const gpa = getStudentGPA(id);
+                const courseNames = (s.courses || []).map(cid => getCourseName(cid)).join(', ');
+                tbody.innerHTML += `
+              <tr>
+                <td>${id}</td>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.phone || '-'}</td>
+                <td>${s.class || '-'}</td>
+                <td>${courseNames}</td>
+                <td><span class="grade-badge grade-${gpa >= 3 ? 'a' : gpa >= 2 ? 'b' : 'c'}">GPA: ${gpa}</span></td>
+                <td>
+                  <button onclick="editStudent('${id}')" class="small primary">✎ Edit</button>
+                  <button onclick="deleteStudent('${id}')" class="small danger">🗑️ Del</button>
+                </td>
+              </tr>`;
+            }
+            if (tbody.children.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="7" style="text-align: center; padding: 20px;">No students found</td></tr>';
+            }
+        }
+
+        document.getElementById('studentFilter').addEventListener('input', refreshStudentTable);
+
+        function editStudent(id) {
+            const s = DB.students[id];
+            document.getElementById('sId').value = id;
+            document.getElementById('sName').value = s.name;
+            document.getElementById('sPhone').value = s.phone || '';
+            document.getElementById('sEmail').value = s.email || '';
+            document.getElementById('sClass').value = s.class || '';
+            const select = document.getElementById('sCourses');
+            for (let option of select.options) {
+                option.selected = (s.courses || []).includes(option.value);
+            }
+            window.scrollTo(0, 0);
+            showNotification('📝 Editing student: ' + s.name);
+        }
+
+        function deleteStudent(id) {
+            if (confirm('Delete this student? This will remove all related data.')) {
+                delete DB.students[id];
+                DB.fees = DB.fees.filter(f => f.studentId !== id);
+                DB.attendance = DB.attendance.filter(a => a.studentId !== id);
+                DB.marks = DB.marks.filter(m => m.studentId !== id);
+                save();
+                refreshStudentTable();
+                loadDashboard();
+                showNotification('🗑️ Student deleted!');
+            }
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('sId').value;
+            const name = document.getElementById('sName').value;
+            const phone = document.getElementById('sPhone').value;
+            const email = document.getElementById('sEmail').value;
+            const sClass = document.getElementById('sClass').value;
+            const selected = Array.from(document.getElementById('sCourses').selectedOptions).map(o => o.value);
+
+            if (id) {
+                DB.students[id].name = name;
+                DB.students[id].phone = phone;
+                DB.students[id].email = email;
+                DB.students[id].class = sClass;
+                DB.students[id].courses = selected;
+                showNotification('✓ Student updated!');
+            } else {
+                const newId = generateId('s');
+                DB.students[newId] = { name, phone, email, class: sClass, courses: selected };
+                showNotification('✓ New student added!');
+            }
+            save();
+            this.reset();
+            document.getElementById('sId').value = '';
+            refreshStudentTable();
+            loadDashboard();
+        });
+
+        function populateStudentCourseSelect() {
+            const select = document.getElementById('sCourses');
+            select.innerHTML = '<option value="">-- Select Courses --</option>';
+            for (let cid in DB.courses) {
+                const opt = document.createElement('option');
+                opt.value = cid;
+                opt.textContent = DB.courses[cid].name + ' (₹' + DB.courses[cid].fee + ')';
+                select.appendChild(opt);
+            }
+        }
+
+        function clearStudentFilter() {
+            document.getElementById('studentFilter').value = '';
+            refreshStudentTable();
+        }
+
+        // ============================================================
+        // TEACHERS (unchanged)
+        // ============================================================
+        function refreshTeacherTable() {
+            const tbody = document.querySelector('#teacherTable tbody');
+            tbody.innerHTML = '';
+            const teacherFilter = document.getElementById('teacherFilter').value.toLowerCase();
+
+            for (let id in DB.teachers) {
+                const t = DB.teachers[id];
+                if (teacherFilter && !t.name.toLowerCase().includes(teacherFilter)) continue;
+
+                tbody.innerHTML += `
+              <tr>
+                <td>${id}</td>
+                <td><strong>${t.name}</strong></td>
+                <td>${t.email}</td>
+                <td>${(t.subjects || []).join(', ')}</td>
+                <td>${t.qualification || '-'}</td>
+                <td>
+                  <button onclick="editTeacher('${id}')" class="small primary">✎ Edit</button>
+                  <button onclick="deleteTeacher('${id}')" class="small danger">🗑️ Del</button>
+                </td>
+              </tr>`;
+            }
+            if (tbody.children.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="6" style="text-align: center; padding: 20px;">No teachers found</td></tr>';
+            }
+        }
+
+        document.getElementById('teacherFilter').addEventListener('input', refreshTeacherTable);
+
+        function editTeacher(id) {
+            const t = DB.teachers[id];
+            document.getElementById('tId').value = id;
+            document.getElementById('tName').value = t.name;
+            document.getElementById('tEmail').value = t.email;
+            document.getElementById('tPhone').value = t.phone || '';
+            document.getElementById('tQualification').value = t.qualification || '';
+            document.getElementById('tSubjects').value = (t.subjects || []).join(', ');
+            window.scrollTo(0, 0);
+        }
+
+        function deleteTeacher(id) {
+            if (confirm('Delete this teacher?')) {
+                delete DB.teachers[id];
+                for (let cid in DB.courses) {
+                    if (DB.courses[cid].teacherId === id) DB.courses[cid].teacherId = null;
+                }
+                save();
+                refreshTeacherTable();
+                showNotification('🗑️ Teacher deleted!');
+            }
+        }
+
+        document.getElementById('teacherForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('tId').value;
+            const name = document.getElementById('tName').value;
+            const email = document.getElementById('tEmail').value;
+            const phone = document.getElementById('tPhone').value;
+            const qualification = document.getElementById('tQualification').value;
+            const subjects = document.getElementById('tSubjects').value.split(',').map(s => s.trim()).filter(s => s);
+
+            if (id) {
+                DB.teachers[id].name = name;
+                DB.teachers[id].email = email;
+                DB.teachers[id].phone = phone;
+                DB.teachers[id].qualification = qualification;
+                DB.teachers[id].subjects = subjects;
+                showNotification('✓ Teacher updated!');
+            } else {
+                const newId = generateId('t');
+                DB.teachers[newId] = { name, email, phone, qualification, subjects };
+                showNotification('✓ New teacher added!');
+            }
+            save();
+            this.reset();
+            document.getElementById('tId').value = '';
+            refreshTeacherTable();
+        });
+
+        function populateTeacherSelect() {
+            const select = document.getElementById('cTeacher');
+            select.innerHTML = '<option value="">Select Teacher</option>';
+            for (let tid in DB.teachers) {
+                select.innerHTML += `<option value="${tid}">${DB.teachers[tid].name}</option>`;
+            }
+        }
+
+        function clearTeacherFilter() {
+            document.getElementById('teacherFilter').value = '';
+            refreshTeacherTable();
+        }
+
+        // ============================================================
+        // COURSES (unchanged)
+        // ============================================================
+        function refreshCourseTable() {
+            const tbody = document.querySelector('#courseTable tbody');
+            tbody.innerHTML = '';
+            const courseFilter = document.getElementById('courseFilter').value.toLowerCase();
+
+            for (let cid in DB.courses) {
+                const c = DB.courses[cid];
+                if (courseFilter && !c.name.toLowerCase().includes(courseFilter)) continue;
+
+                let studentCount = 0;
+                for (let sid in DB.students) {
+                    if ((DB.students[sid].courses || []).includes(cid)) studentCount++;
+                }
+
+                tbody.innerHTML += `
+              <tr>
+                <td>${cid}</td>
+                <td><strong>${c.name}</strong></td>
+                <td>₹${c.fee}</td>
+                <td>${getTeacherName(c.teacherId)}</td>
+                <td>${c.duration || '-'}</td>
+                <td><strong>${studentCount}</strong></td>
+                <td>
+                  <button onclick="editCourse('${cid}')" class="small primary">✎ Edit</button>
+                  <button onclick="deleteCourse('${cid}')" class="small danger">🗑️ Del</button>
+                </td>
+              </tr>`;
+            }
+            if (tbody.children.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="7" style="text-align: center; padding: 20px;">No courses found</td></tr>';
+            }
+        }
+
+        function editCourse(id) {
+            const c = DB.courses[id];
+            document.getElementById('cId').value = id;
+            document.getElementById('cName').value = c.name;
+            document.getElementById('cFee').value = c.fee;
+            document.getElementById('cTeacher').value = c.teacherId || '';
+            document.getElementById('cDuration').value = c.duration || '';
+            document.getElementById('cDescription').value = c.description || '';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteCourse(id) {
+            if (confirm('Delete this course? This will remove it from all students.')) {
+                for (let sid in DB.students) {
+                    const idx = (DB.students[sid].courses || []).indexOf(id);
+                    if (idx > -1) DB.students[sid].courses.splice(idx, 1);
+                }
+                DB.fees = DB.fees.filter(f => f.courseId !== id);
+                DB.attendance = DB.attendance.filter(a => a.courseId !== id);
+                for (let eid in DB.exams) {
+                    if (DB.exams[eid].courseId === id) delete DB.exams[eid];
+                }
+                DB.marks = DB.marks.filter(m => {
+                    const exam = DB.exams[m.examId];
+                    return exam && exam.courseId !== id;
+                });
+                delete DB.courses[id];
+                save();
+                refreshCourseTable();
+                showNotification('🗑️ Course deleted!');
+            }
+        }
+
+        document.getElementById('courseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('cId').value;
+            const name = document.getElementById('cName').value;
+            const fee = parseFloat(document.getElementById('cFee').value);
+            const teacherId = document.getElementById('cTeacher').value || null;
+            const duration = document.getElementById('cDuration').value;
+            const description = document.getElementById('cDescription').value;
+
+            if (id) {
+                DB.courses[id].name = name;
+                DB.courses[id].fee = fee;
+                DB.courses[id].teacherId = teacherId;
+                DB.courses[id].duration = duration;
+                DB.courses[id].description = description;
+                showNotification('✓ Course updated!');
+            } else {
+                const newId = generateId('c');
+                DB.courses[newId] = { name, fee, teacherId, duration, description };
+                showNotification('✓ New course added!');
+            }
+            save();
+            this.reset();
+            document.getElementById('cId').value = '';
+            refreshCourseTable();
+            populateCourseSelects();
+            populateStudentCourseSelect();
+        });
+
+        function populateCourseSelects() {
+            ['payCourse', 'attCourse', 'examCourse', 'schedCourse'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = '<option value="">Select Course</option>';
+                for (let cid in DB.courses) {
+                    sel.innerHTML += `<option value="${cid}">${DB.courses[cid].name}</option>`;
+                }
+            });
+
+            const payStudent = document.getElementById('payStudent');
+            if (payStudent) {
+                payStudent.innerHTML = '<option value="">Select Student</option>';
+                for (let sid in DB.students) {
+                    payStudent.innerHTML += `<option value="${sid}">${DB.students[sid].name}</option>`;
+                }
+            }
+
+            const marksExam = document.getElementById('marksExam');
+            if (marksExam) {
+                marksExam.innerHTML = '<option value="">Select Exam</option>';
+                for (let eid in DB.exams) {
+                    const ex = DB.exams[eid];
+                    marksExam.innerHTML += `<option value="${eid}">${ex.name} (${getCourseName(ex.courseId)})</option>`;
+                }
+            }
+
+            const marksStudent = document.getElementById('marksStudent');
+            if (marksStudent) {
+                marksStudent.innerHTML = '<option value="">Select Student</option>';
+                for (let sid in DB.students) {
+                    marksStudent.innerHTML += `<option value="${sid}">${DB.students[sid].name}</option>`;
+                }
+            }
+        }
+
+        function clearCourseFilter() {
+            document.getElementById('courseFilter').value = '';
+            refreshCourseTable();
+        }
+
+        // ============================================================
+        // FEES (unchanged)
+        // ============================================================
+        function refreshFeeTab() {
+            let totalCollected = DB.fees.reduce((sum, f) => sum + f.amount, 0);
+            let totalExpected = 0;
+            let pending = 0;
+
+            for (let sid in DB.students) {
+                const student = DB.students[sid];
+                (student.courses || []).forEach(cid => {
+                    const fee = getTotalFee(cid);
+                    totalExpected += fee;
+                    pending += Math.max(0, getDueAmount(sid, cid));
+                });
+            }
+
+            const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+
+            document.getElementById('totalCollected').textContent = '₹' + totalCollected;
+            document.getElementById('pendingFees').textContent = '₹' + pending;
+            document.getElementById('collectionRate').textContent = collectionRate + '%';
+            document.getElementById('totalExpected').textContent = '₹' + totalExpected;
+
+            const tbody = document.querySelector('#paymentTable tbody');
+            tbody.innerHTML = '';
+            const feeFilter = document.getElementById('feeFilter').value.toLowerCase();
+
+            DB.fees.slice().reverse().forEach(f => {
+                const studentName = getStudentName(f.studentId);
+                if (feeFilter && !studentName.toLowerCase().includes(feeFilter)) return;
+
+                const due = getDueAmount(f.studentId, f.courseId);
+                tbody.innerHTML += `
+              <tr>
+                <td><strong>${studentName}</strong></td>
+                <td>${getCourseName(f.courseId)}</td>
+                <td>₹${f.amount}</td>
+                <td>${f.date}</td>
+                <td style="color:${due > 0 ? 'var(--danger)' : 'var(--success)'}">${due > 0 ? '⏳ Due ₹'+due : '✓ Paid'}</td>
+                <td><button onclick="deleteFee('${f.id}')" class="small danger">🗑️ Del</button></td>
+              </tr>`;
+            });
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="6" style="text-align: center; padding: 20px;">No payments recorded</td></tr>';
+            }
+
+            populateCourseSelects();
+        }
+
+        function deleteFee(feeId) {
+            if (confirm('Delete this payment record?')) {
+                DB.fees = DB.fees.filter(f => f.id !== feeId);
+                save();
+                refreshFeeTab();
+                loadDashboard();
+                showNotification('🗑️ Payment deleted!');
+            }
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('payStudent').value;
+            const courseId = document.getElementById('payCourse').value;
+            const amount = parseFloat(document.getElementById('payAmount').value);
+            const date = document.getElementById('payDate').value;
+
+            if (!studentId || !courseId || isNaN(amount) || !date) {
+                showNotification('⚠️ Please fill all fields!');
+                return;
+            }
+
+            DB.fees.push({ id: generateId('f'), studentId, courseId, amount, date });
+            save();
+            this.reset();
+            refreshFeeTab();
+            loadDashboard();
+            showNotification('✓ Payment recorded!');
+        });
+
+        function clearFeeFilter() {
+            document.getElementById('feeFilter').value = '';
+            refreshFeeTab();
+        }
+
+        // ============================================================
+        // ATTENDANCE (unchanged)
+        // ============================================================
+        function refreshAttendanceTab() {
+            const courseId = document.getElementById('attCourse').value;
+            const attStudentGrid = document.getElementById('attStudentGrid');
+            attStudentGrid.innerHTML = '';
+
+            if (!courseId) {
+                attStudentGrid.innerHTML =
+                    '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Please select a course</p>';
+                return;
+            }
+
+            for (let sid in DB.students) {
+                const s = DB.students[sid];
+                if (!((s.courses || []).includes(courseId))) continue;
+
+                const isSelected = selectedAttendanceStudents.includes(sid);
+                attStudentGrid.innerHTML += `
+              <div class="attendance-card ${isSelected ? 'selected' : ''}" 
+                   onclick="toggleAttendanceStudent('${sid}')">
+                <strong>${s.name}</strong>
+              </div>`;
+            }
+
+            const tbody = document.querySelector('#attTable tbody');
+            tbody.innerHTML = '';
+            const attFilter = document.getElementById('attFilter').value.toLowerCase();
+
+            DB.attendance.slice().reverse().forEach(a => {
+                const studentName = getStudentName(a.studentId);
+                if (attFilter && !studentName.toLowerCase().includes(attFilter)) return;
+
+                tbody.innerHTML += `
+              <tr>
+                <td><strong>${studentName}</strong></td>
+                <td>${getCourseName(a.courseId)}</td>
+                <td>${a.date}</td>
+                <td><span style="font-weight: bold;">${a.status === 'Present' ? '✓ Present' : a.status === 'Absent' ? '✗ Absent' : '📋 Leave'}</span></td>
+              </tr>`;
+            });
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML =
+                    '<tr><td colspan="4" style="text-align: center; padding: 20px;">No attendance records</td></tr>';
+            }
+        }
+
+        function toggleAttendanceStudent(studentId) {
+            const idx = selectedAttendanceStudents.indexOf(studentId);
+            if (idx > -1) {
+                selectedAttendanceStudents.splice(idx, 1);
+            } else {
+                selectedAttendanceStudents.push(studentId);
+            }
+            refreshAttendanceTab();
+        }
+
+        document.getElementById('attCourse').addEventListener('change', refreshAttendanceTab);
+
+        document.getElementById('attForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const courseId = document.getElementById('attCourse').value;
+            const date = document.getElementById('attDate').value;
+            const status = document.getElementById('attStatus').value;
+
+            if (!courseId || !date || !status || selectedAttendanceStudents.length === 0) {
+                showNotification('⚠️ Please select course, date, status and students!');
+                return;
+            }
+
+            selectedAttendanceStudents.forEach(studentId => {
+                DB.attendance.push({ id: generateId('a'), studentId, courseId, date, status });
+            });
+
+            save();
+            selectedAttendanceStudents = [];
+            this.reset();
+            refreshAttendanceTab();
+            showNotification('✓ Attendance saved!');
+        });
+
+        function clearAttFilter() {
+            document.getElementById('attFilter').value = '';
+            refreshAttendanceTab();
+        }
+
+        // ============================================================
+        // EXAMS (unchanged)
+        // ============================================================
+        function refreshExamsTab() {
+            populateCourseSelects();
+
+            const container = document.getElementById('resultsDiv');
+            container.innerHTML = '';
+
+            let hasExams = false;
+            for (let eid in DB.exams) {
+                hasExams = true;
+                const exam = DB.exams[eid];
+                const marksForExam = DB.marks.filter(m => m.examId === eid);
+
+                let html = `<div class="card">
+              <h3>${exam.name}</h3>
+              <p><strong>Course:</strong> ${getCourseName(exam.courseId)} | <strong>Date:</strong> ${exam.date} | <strong>Max Marks:</strong> ${exam.maxMarks}</p>`;
+
+                if (marksForExam.length) {
+                    html += '<table><tr><th>Student</th><th>Marks</th><th>%</th><th>Grade</th></tr>';
+                    const sortedMarks = marksForExam.sort((a, b) => b.marks - a.marks);
+                    sortedMarks.forEach((m, idx) => {
+                        const percentage = ((m.marks / exam.maxMarks) * 100).toFixed(2);
+                        const grade = calculateGrade(m.marks, exam.maxMarks);
+                        html +=
+                            `<tr ${idx === 0 ? 'style="background: var(--success); color: white;"' : ''}>
+                    <td>${getStudentName(m.studentId)}</td>
+                    <td>${m.marks}</td>
+                    <td>${percentage}%</td>
+                    <td><span class="grade-badge grade-${grade.toLowerCase()}">${grade}</span></td>
+                  </tr>`;
+                    });
+                    html += '</table>';
+                } else {
+                    html += '<p style="text-align: center; padding: 20px; color: var(--text-light);">No marks entered</p>';
+                }
+
+                html += `<button onclick="deleteExam('${eid}')" class="small danger" style="margin-top: 10px;">🗑️ Delete Exam</button>
+              </div>`;
+                container.innerHTML += html;
+            }
+
+            if (!hasExams) {
+                container.innerHTML = '<div class="no-data"><p>No exams created yet</p></div>';
+            }
+        }
+
+        function deleteExam(id) {
+            if (confirm('Delete this exam and all marks?')) {
+                DB.marks = DB.marks.filter(m => m.examId !== id);
+                delete DB.exams[id];
+                save();
+                refreshExamsTab();
+                showNotification('🗑️ Exam deleted!');
+            }
+        }
+
+        document.getElementById('examForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('examName').value;
+            const courseId = document.getElementById('examCourse').value;
+            const date = document.getElementById('examDate').value;
+            const maxMarks = parseFloat(document.getElementById('maxMarks').value);
+
+            if (!courseId || !name || !date || isNaN(maxMarks)) {
+                showNotification('⚠️ Please fill all fields!');
+                return;
+            }
+
+            const newId = generateId('e');
+            DB.exams[newId] = { name, courseId, date, maxMarks };
+            save();
+            this.reset();
+            refreshExamsTab();
+            showNotification('✓ Exam created!');
+        });
+
+        document.getElementById('marksForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const examId = document.getElementById('marksExam').value;
+            const studentId = document.getElementById('marksStudent').value;
+            const marks = parseFloat(document.getElementById('marksObtained').value);
+
+            if (!examId || !studentId || isNaN(marks)) {
+                showNotification('⚠️ Please fill all fields!');
+                return;
+            }
+
+            DB.marks = DB.marks.filter(m => !(m.examId === examId && m.studentId === studentId));
+            DB.marks.push({ examId, studentId, marks });
+            save();
+            this.reset();
+            refreshExamsTab();
+            showNotification('✓ Marks saved!');
+        });
+
+        // ============================================================
+        // SCHEDULE (unchanged)
+        // ============================================================
+        function refreshScheduleTab() {
+            populateCourseSelects();
+
+            const scheduleTable = document.getElementById('scheduleTable');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+            let table = '<table><tr><th>Day</th><th>Course</th><th>Time</th><th>Notes</th><th>Actions</th></tr>';
+
+            days.forEach(day => {
+                const daySchedules = DB.schedule.filter(s => s.day === day).sort((a, b) => {
+                    return a.start.localeCompare(b.start);
+                });
+
+                if (daySchedules.length === 0) return;
+
+                daySchedules.forEach(s => {
+                    table += `<tr>
+                <td><strong>${day}</strong></td>
+                <td>${getCourseName(s.courseId)}</td>
+                <td>${s.start} - ${s.end}</td>
+                <td>${s.notes || '-'}</td>
+                <td>
+                  <button onclick="deleteSchedule('${s.id}')" class="small danger">🗑️ Del</button>
+                </td>
+              </tr>`;
+                });
+            });
+
+            table += '</table>';
+            scheduleTable.innerHTML = table.includes('<tr><td') ? table : '<p class="no-data">No schedule created</p>';
+        }
+
+        function deleteSchedule(id) {
+            if (confirm('Delete this schedule?')) {
+                DB.schedule = DB.schedule.filter(s => s.id !== id);
+                save();
+                refreshScheduleTab();
+                showNotification('🗑️ Schedule deleted!');
+            }
+        }
+
+        document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const courseId = document.getElementById('schedCourse').value;
+            const day = document.getElementById('schedDay').value;
+            const start = document.getElementById('schedStart').value;
+            const end = document.getElementById('schedEnd').value;
+            const notes = document.getElementById('schedNotes').value;
+
+            if (!courseId || !day || !start || !end) {
+                showNotification('⚠️ Please fill all required fields!');
+                return;
+            }
+
+            const id = generateId('sc');
+            DB.schedule.push({ id, courseId, day, start, end, notes });
+            save();
+            this.reset();
+            refreshScheduleTab();
+            showNotification('✓ Schedule added!');
+        });
+
+        // ============================================================
+        // REPORTS (unchanged)
+        // ============================================================
+        function loadReports() {
+            let html = '';
+
+            // Pending Fees Report
+            html += '<h3>📋 Pending Fees Report</h3>';
+            html += '<table><tr><th>Student</th><th>Course</th><th>Total Fee</th><th>Paid</th><th>Due</th></tr>';
+            let hasPending = false;
+            for (let sid in DB.students) {
+                const student = DB.students[sid];
+                (student.courses || []).forEach(cid => {
+                    const total = getTotalFee(cid);
+                    const paid = getPaidSoFar(sid, cid);
+                    const due = total - paid;
+                    if (due > 0) {
+                        hasPending = true;
+                        html +=
+                            `<tr><td><strong>${student.name}</strong></td><td>${getCourseName(cid)}</td><td>₹${total}</td><td>₹${paid}</td><td style="color: var(--danger);">₹${due}</td></tr>`;
+                    }
+                });
+            }
+            if (!hasPending) html += '<tr><td colspan="5" style="text-align: center; padding: 20px;">All fees paid!</td></tr>';
+            html += '</table>';
+
+            // Attendance Summary
+            html += '<h3>📊 Attendance Summary</h3>';
+            html +=
+                '<table><tr><th>Student</th><th>Course</th><th>Present</th><th>Absent</th><th>Leave</th><th>Attendance %</th></tr>';
+            const attSummary = {};
+            DB.attendance.forEach(a => {
+                const key = a.studentId + '_' + a.courseId;
+                if (!attSummary[key]) attSummary[key] = { present: 0, absent: 0, leave: 0 };
+                if (a.status === 'Present') attSummary[key].present++;
+                else if (a.status === 'Absent') attSummary[key].absent++;
+                else attSummary[key].leave++;
+            });
+
+            for (let key in attSummary) {
+                const [sid, cid] = key.split('_');
+                const sum = attSummary[key];
+                const total = sum.present + sum.absent;
+                const percentage = total > 0 ? Math.round((sum.present / total) * 100) : 0;
+                html +=
+                    `<tr><td><strong>${getStudentName(sid)}</strong></td><td>${getCourseName(cid)}</td><td>${sum.present}</td><td>${sum.absent}</td><td>${sum.leave}</td><td>${percentage}%</td></tr>`;
+            }
+            if (Object.keys(attSummary).length === 0) html +=
+                '<tr><td colspan="6" style="text-align: center; padding: 20px;">No attendance records</td></tr>';
+            html += '</table>';
+
+            // Performance Report
+            html += '<h3>🏆 Student Performance Report</h3>';
+            html += '<table><tr><th>Student</th><th>GPA</th><th>Total Exams</th><th>Average %</th></tr>';
+            let hasPerformance = false;
+            for (let sid in DB.students) {
+                const studentMarks = DB.marks.filter(m => m.studentId === sid);
+                if (studentMarks.length === 0) continue;
+                hasPerformance = true;
+
+                const gpa = getStudentGPA(sid);
+                let totalPercentage = 0;
+                studentMarks.forEach(m => {
+                    const exam = DB.exams[m.examId];
+                    if (exam) totalPercentage += (m.marks / exam.maxMarks) * 100;
+                });
+                const avgPercentage = Math.round(totalPercentage / studentMarks.length);
+                html +=
+                    `<tr><td><strong>${getStudentName(sid)}</strong></td><td><span class="grade-badge grade-${gpa >= 3 ? 'a' : gpa >= 2 ? 'b' : 'c'}">${gpa}</span></td><td>${studentMarks.length}</td><td>${avgPercentage}%</td></tr>`;
+            }
+            if (!hasPerformance) html += '<tr><td colspan="4" style="text-align: center; padding: 20px;">No exam data</td></tr>';
+            html += '</table>';
+
+            document.getElementById('reportContent').innerHTML = html;
+        }
+
+        // ============================================================
+        // EXPORT FUNCTIONS (unchanged)
+        // ============================================================
+        function exportDataJSON() {
+            const dataStr = JSON.stringify(DB, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'av_tuitions_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            showNotification('📥 JSON exported!');
+        }
+
+        function exportDataCSV() {
+            let csv = 'STUDENTS\nID,Name,Phone,Class,Email,Courses\n';
+            for (let sid in DB.students) {
+                const s = DB.students[sid];
+                csv +=
+                    `${sid},${s.name},${s.phone || ''},${s.class || ''},${s.email || ''},"${(s.courses || []).map(c => getCourseName(c)).join(', ')}"\n`;
+            }
+
+            csv += '\nTEACHERS\nID,Name,Email,Phone,Subjects,Qualification\n';
+            for (let tid in DB.teachers) {
+                const t = DB.teachers[tid];
+                csv +=
+                    `${tid},${t.name},${t.email},${t.phone || ''},"${(t.subjects || []).join(', ')}",${t.qualification || ''}\n`;
+            }
+
+            csv += '\nCOURSES\nID,Name,Fee,Teacher,Duration\n';
+            for (let cid in DB.courses) {
+                const c = DB.courses[cid];
+                csv += `${cid},${c.name},${c.fee},${getTeacherName(c.teacherId)},${c.duration || ''}\n`;
+            }
+
+            csv += '\nFEES\nStudent,Course,Amount,Date\n';
+            DB.fees.forEach(f => {
+                csv += `${getStudentName(f.studentId)},${getCourseName(f.courseId)},${f.amount},${f.date}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'av_tuitions_' + new Date().toISOString().split('T')[0] + '.csv';
+            link.click();
+            showNotification('📄 CSV exported!');
+        }
+
+        function generatePDF() {
+            showNotification('ℹ️ PDF export - Please use browser Print (Ctrl+P)');
+            setTimeout(() => window.print(), 500);
+        }
+
+        function generateReportPDF() {
+            showNotification('ℹ️ PDF report - Please use browser Print (Ctrl+P)');
+            setTimeout(() => window.print(), 500);
+        }
+
+        function exportReportsCSV() {
+            exportDataCSV();
+        }
+
+        function printReports() {
+            window.print();
+        }
+
+        function backupData() {
+            const backup = {
+                data: DB,
+                ids: nextId,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('av_backup_' + new Date().getTime(), JSON.stringify(backup));
+            showNotification('💾 Backup created!');
+        }
+
+        function restoreData() {
+            const backups = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('av_backup_')) {
+                    backups.push({ key, data: JSON.parse(localStorage.getItem(key)) });
+                }
+            }
+
+            if (backups.length === 0) {
+                showNotification('⚠️ No backups found!');
+                return;
+            }
+
+            const latest = backups.sort((a, b) => b.key.localeCompare(a.key))[0];
+            if (confirm('Restore to ' + latest.data.timestamp + '?')) {
+                DB = latest.data.data;
+                nextId = latest.data.ids;
+                save();
+                showNotification('✓ Restored!');
+                location.reload();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ DELETE ALL DATA? This cannot be undone!')) {
+                if (confirm('ARE YOU ABSOLUTELY SURE? This will delete EVERYTHING!')) {
+                    localStorage.clear();
+                    showNotification('🗑️ All data cleared!');
+                    location.reload();
+                }
+            }
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (confirm('Replace current data with imported data?')) {
+                        DB = imported.students ? imported : imported.data || DB;
+                        save();
+                        showNotification('✓ Data imported!');
+                        location.reload();
+                    }
+                } catch {
+                    showNotification('⚠️ Invalid file format!');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // ============================================================
+        // GLOBAL SEARCH (unchanged)
+        // ============================================================
+        document.getElementById('globalSearch').addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            if (!query) {
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.style.display = '';
+                });
+                return;
+            }
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                let found = false;
+                const text = tab.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    found = true;
+                }
+                tab.style.display = found ? 'block' : 'none';
+            });
+
+            document.querySelectorAll('.tablink').forEach(btn => {
+                const tabId = btn.dataset.tab;
+                const tabEl = document.getElementById(tabId);
+                if (tabEl && tabEl.style.display !== 'none') {
+                    btn.style.display = '';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        });
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+        window.addEventListener('load', function() {
+            initTheme();
+            // Ensure app is locked by default
+            overlay.classList.remove('hidden');
+            mainApp.classList.remove('active');
+            passwordInput.focus();
+            // Pre-populate data in background
+            refreshActiveTab();
+        });
+
+        // Re-run when unlocked
+        console.log('🔐 Password-protected AV Tuitions loaded.');
+        console.log('ℹ️ Default password: admin123');
+    </script>
 </body>
 </html>
