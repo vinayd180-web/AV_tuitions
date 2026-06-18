@@ -1,663 +1,721 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>AV Private Tuitions - Advanced Management System</title>
-    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22AV%20Private%20Tuitions%22%2C%22short_name%22%3A%22AV%20Tuitions%22%2C%22start_url%22%3A%22.%2Findex.html%22%7D">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js">
-    </script>
-    <style>
-        /* ============================================================
-           PASSWORD OVERLAY STYLES (added on top)
-           ============================================================ */
-        #passwordOverlay {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(145deg, #0f172a, #1e293b);
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-        #passwordOverlay.hidden {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>AV Private Tuitions - Advanced Management System</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22AV%20Private%20Tuitions%22%2C%22short_name%22%3A%22AV%20Tuitions%22%2C%22start_url%22%3A%22.%2Findex.html%22%7D">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js">
+</script>
+<style>
+    /* ============================================================
+       PASSWORD OVERLAY STYLES
+       ============================================================ */
+    #passwordOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #0f172a, #1e293b);
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #passwordOverlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .login-card {
+        background: #ffffff;
+        padding: 40px 32px 32px;
+        border-radius: 28px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+        animation: popUp 0.5s ease;
+    }
+    @keyframes popUp {
+        from {
             opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
+            transform: scale(0.95) translateY(30px);
         }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
 
-        .login-card {
-            background: #ffffff;
-            padding: 40px 32px 32px;
-            border-radius: 28px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-            animation: popUp 0.5s ease;
-        }
-        @keyframes popUp {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
+    .login-card .lock-icon {
+        font-size: 44px;
+        background: #eef2ff;
+        width: 76px;
+        height: 76px;
+        line-height: 76px;
+        border-radius: 50%;
+        margin: 0 auto 12px;
+        color: #4f46e5;
+    }
+    .login-card h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+    .login-card p {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
 
-        .login-card .lock-icon {
-            font-size: 44px;
-            background: #eef2ff;
-            width: 76px;
-            height: 76px;
-            line-height: 76px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            color: #4f46e5;
-        }
-        .login-card h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 4px;
-        }
-        .login-card p {
-            color: #64748b;
-            font-size: 14px;
-            margin-bottom: 24px;
-        }
+    .login-card .input-group {
+        position: relative;
+        margin-bottom: 18px;
+    }
+    .login-card .input-group input {
+        width: 100%;
+        padding: 14px 16px 14px 46px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 16px;
+        background: #f8fafc;
+        outline: none;
+        transition: border 0.2s, box-shadow 0.2s;
+        color: #0f172a;
+    }
+    .login-card .input-group input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        background: #fff;
+    }
+    .login-card .input-group .input-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 20px;
+        color: #94a3b8;
+    }
 
-        .login-card .input-group {
-            position: relative;
-            margin-bottom: 18px;
-        }
-        .login-card .input-group input {
-            width: 100%;
-            padding: 14px 16px 14px 46px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            background: #f8fafc;
-            outline: none;
-            transition: border 0.2s, box-shadow 0.2s;
-            color: #0f172a;
-        }
-        .login-card .input-group input:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
-            background: #fff;
-        }
-        .login-card .input-group .input-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-            color: #94a3b8;
-        }
+    .login-card .error-msg {
+        color: #ef4444;
+        font-size: 13px;
+        min-height: 24px;
+        font-weight: 500;
+    }
 
-        .login-card .error-msg {
-            color: #ef4444;
-            font-size: 13px;
-            min-height: 24px;
-            font-weight: 500;
-        }
+    .login-card button {
+        width: 100%;
+        padding: 14px;
+        background: #4f46e5;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+    }
+    .login-card button:hover {
+        background: #4338ca;
+    }
+    .login-card button:active {
+        transform: scale(0.97);
+    }
 
-        .login-card button {
-            width: 100%;
-            padding: 14px;
-            background: #4f46e5;
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-        .login-card button:hover {
-            background: #4338ca;
-        }
-        .login-card button:active {
-            transform: scale(0.97);
-        }
+    .login-card .hint {
+        margin-top: 18px;
+        font-size: 13px;
+        color: #94a3b8;
+    }
+    .login-card .hint span {
+        background: #f1f5f9;
+        padding: 2px 12px;
+        border-radius: 6px;
+        font-family: monospace;
+        color: #334155;
+    }
 
-        .login-card .hint {
-            margin-top: 18px;
-            font-size: 13px;
-            color: #94a3b8;
-        }
-        .login-card .hint span {
-            background: #f1f5f9;
-            padding: 2px 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            color: #334155;
-        }
+    /* ============================================================
+       MAIN APP WRAPPER – hidden until unlocked
+       ============================================================ */
+    #mainApp {
+        display: none;
+    }
+    #mainApp.active {
+        display: block;
+    }
 
-        /* ============================================================
-           MAIN APP WRAPPER – hidden until unlocked
-           ============================================================ */
-        #mainApp {
-            display: none;
-        }
-        #mainApp.active {
-            display: block;
-        }
+    /* ============================================================
+       YOUR ORIGINAL STYLES (with small additions for attendance)
+       ============================================================ */
+    :root {
+        --primary: #1abc9c;
+        --secondary: #2c3e50;
+        --tertiary: #34495e;
+        --bg: #f4f6f9;
+        --card: #ffffff;
+        --text: #333;
+        --text-light: #ecf0f1;
+        --border: #ddd;
+        --danger: #e74c3c;
+        --success: #27ae60;
+        --warning: #f39c12;
+        --info: #3498db;
+    }
 
-        /* ============================================================
-           YOUR ORIGINAL STYLES (unchanged)
-           ============================================================ */
-        :root {
-            --primary: #1abc9c;
-            --secondary: #2c3e50;
-            --tertiary: #34495e;
-            --bg: #f4f6f9;
-            --card: #ffffff;
-            --text: #333;
-            --text-light: #ecf0f1;
-            --border: #ddd;
-            --danger: #e74c3c;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --info: #3498db;
-        }
+    body.dark-mode {
+        --primary: #16a085;
+        --secondary: #1a252f;
+        --tertiary: #22313f;
+        --bg: #1a1a1a;
+        --card: #2d2d2d;
+        --text: #ecf0f1;
+        --text-light: #95a5a6;
+        --border: #444;
+    }
 
-        body.dark-mode {
-            --primary: #16a085;
-            --secondary: #1a252f;
-            --tertiary: #22313f;
-            --bg: #1a1a1a;
-            --card: #2d2d2d;
-            --text: #ecf0f1;
-            --text-light: #95a5a6;
-            --border: #444;
-        }
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding-bottom: 70px;
+        transition: background 0.3s, color 0.3s;
+    }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding-bottom: 70px;
-            transition: background 0.3s, color 0.3s;
-        }
+    header {
+        background: linear-gradient(135deg, var(--secondary), var(--tertiary));
+        color: white;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
 
+    .header-title {
+        font-size: 1.4em;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+
+    .header-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .header-controls button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: 0.3s;
+    }
+
+    .header-controls button:hover {
+        opacity: 0.8;
+    }
+
+    .search-box {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--text);
+        width: 200px;
+    }
+
+    .logout-btn {
+        background: #e74c3c !important;
+        color: white !important;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9em;
+        transition: 0.3s;
+        font-weight: 600;
+    }
+    .logout-btn:hover {
+        opacity: 0.85;
+        transform: scale(1.02);
+    }
+
+    nav {
+        display: flex;
+        overflow-x: auto;
+        background: var(--tertiary);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    nav button {
+        flex: 1 0 auto;
+        padding: 12px 8px;
+        background: transparent;
+        border: none;
+        color: var(--text-light);
+        font-size: 0.9em;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.3s;
+    }
+
+    nav button:hover,
+    nav button.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .tab {
+        display: none;
+        padding: 16px;
+        animation: fade 0.3s;
+    }
+    .tab.active {
+        display: block;
+    }
+
+    @keyframes fade {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .card {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .mini-card {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--primary);
+        transition: transform 0.3s;
+    }
+
+    .mini-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .mini-card .number {
+        font-size: 2em;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 0.85em;
+    }
+
+    th,
+    td {
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+    }
+
+    th {
+        background: var(--tertiary);
+        color: white;
+        font-weight: bold;
+    }
+
+    tr:hover {
+        background: var(--bg);
+    }
+
+    button.primary {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    button.primary:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+
+    button.danger {
+        background: var(--danger);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 0.85em;
+    }
+
+    button.danger:hover {
+        opacity: 0.9;
+    }
+
+    button.small {
+        padding: 4px 10px;
+        font-size: 0.8em;
+    }
+
+    button.secondary {
+        background: var(--info);
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    button.secondary:hover {
+        opacity: 0.9;
+    }
+
+    input,
+    select,
+    textarea {
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 100%;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+        background: var(--card);
+        color: var(--text);
+        transition: 0.3s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        color: var(--primary);
+        font-size: 1.5em;
+    }
+    h3 {
+        margin-top: 20px;
+        margin-bottom: 10px;
+        color: var(--secondary);
+    }
+
+    .filter-section {
+        background: var(--card);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-section input {
+        flex: 1;
+        min-width: 200px;
+        margin: 0;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        background: var(--card);
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary);
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-label {
+        font-size: 0.9em;
+        color: var(--text-light);
+        margin-bottom: 8px;
+    }
+    .stat-value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 15px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert.success {
+        background: var(--success);
+        color: white;
+    }
+    .alert.warning {
+        background: var(--warning);
+        color: white;
+    }
+    .alert.danger {
+        background: var(--danger);
+        color: white;
+    }
+    .alert.info {
+        background: var(--info);
+        color: white;
+    }
+
+    /* ---------- updated attendance styles ---------- */
+    .attendance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .attendance-card {
+        background: var(--card);
+        padding: 14px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid var(--border);
+        transition: all 0.3s;
+        cursor: pointer;
+        user-select: none;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .attendance-card .student-name {
+        font-weight: 600;
+        font-size: 1em;
+    }
+
+    .attendance-card .status-badge {
+        font-size: 0.8em;
+        padding: 2px 10px;
+        border-radius: 20px;
+        background: #e2e8f0;
+        color: #334155;
+        font-weight: 500;
+    }
+
+    .attendance-card.absent {
+        border-color: var(--danger);
+        background: #fee2e2;
+    }
+    .attendance-card.absent .status-badge {
+        background: var(--danger);
+        color: white;
+    }
+    .attendance-card.present {
+        border-color: var(--success);
+        background: #dcfce7;
+    }
+    .attendance-card.present .status-badge {
+        background: var(--success);
+        color: white;
+    }
+
+    .attendance-card .toggle-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 4px 14px;
+        border-radius: 6px;
+        font-size: 0.8em;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-top: 4px;
+    }
+    .attendance-card .toggle-btn:hover {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+    .attendance-card.absent .toggle-btn {
+        background: var(--success);
+    }
+
+    .attendance-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        align-items: center;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+    }
+
+    .modal-content {
+        background: var(--card);
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .close-modal {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: var(--text-light);
+    }
+
+    .close-modal:hover {
+        color: var(--danger);
+    }
+
+    .grade-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+        color: white;
+    }
+
+    .grade-a {
+        background: var(--success);
+    }
+    .grade-b {
+        background: var(--info);
+    }
+    .grade-c {
+        background: var(--warning);
+    }
+    .grade-d,
+    .grade-f {
+        background: var(--danger);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-light);
+    }
+
+    @media (max-width: 768px) {
         header {
-            background: linear-gradient(135deg, var(--secondary), var(--tertiary));
-            color: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            flex-direction: column;
         }
-
-        .header-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        .header-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .header-controls button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: 0.3s;
-        }
-
-        .header-controls button:hover {
-            opacity: 0.8;
-        }
-
         .search-box {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--card);
-            color: var(--text);
-            width: 200px;
+            width: 100%;
         }
-
-        /* Logout button – added for password protection */
-        .logout-btn {
-            background: #e74c3c !important;
-            color: white !important;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: 0.3s;
-            font-weight: 600;
-        }
-        .logout-btn:hover {
-            opacity: 0.85;
-            transform: scale(1.02);
-        }
-
-        nav {
-            display: flex;
-            overflow-x: auto;
-            background: var(--tertiary);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
         nav button {
-            flex: 1 0 auto;
-            padding: 12px 8px;
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            font-size: 0.9em;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s;
+            font-size: 0.75em;
+            padding: 8px 4px;
         }
-
-        nav button:hover,
-        nav button.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .tab {
-            display: none;
-            padding: 16px;
-            animation: fade 0.3s;
-        }
-        .tab.active {
-            display: block;
-        }
-
-        @keyframes fade {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-        }
-
-        .mini-card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid var(--primary);
-            transition: transform 0.3s;
-        }
-
-        .mini-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .mini-card .number {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
         table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 0.85em;
+            font-size: 0.7em;
         }
-
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
+        .dashboard-cards {
+            grid-template-columns: repeat(2, 1fr);
         }
-
-        th {
-            background: var(--tertiary);
-            color: white;
-            font-weight: bold;
-        }
-
-        tr:hover {
-            background: var(--bg);
-        }
-
-        button.primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        button.primary:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-
-        button.danger {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 0.85em;
-        }
-
-        button.danger:hover {
-            opacity: 0.9;
-        }
-
-        button.small {
-            padding: 4px 10px;
-            font-size: 0.8em;
-        }
-
-        button.secondary {
-            background: var(--info);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-
-        button.secondary:hover {
-            opacity: 0.9;
-        }
-
-        input,
-        select,
-        textarea {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            width: 100%;
-            margin-bottom: 8px;
-            font-size: 0.9em;
-            background: var(--card);
-            color: var(--text);
-            transition: 0.3s;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            color: var(--primary);
-            font-size: 1.5em;
-        }
-        h3 {
-            margin-top: 20px;
-            margin-bottom: 10px;
-            color: var(--secondary);
-        }
-
-        .filter-section {
-            background: var(--card);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .filter-section input {
-            flex: 1;
-            min-width: 200px;
-            margin: 0;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-            text-align: center;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: var(--text-light);
-            margin-bottom: 8px;
-        }
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .alert.success {
-            background: var(--success);
-            color: white;
-        }
-        .alert.warning {
-            background: var(--warning);
-            color: white;
-        }
-        .alert.danger {
-            background: var(--danger);
-            color: white;
-        }
-        .alert.info {
-            background: var(--info);
-            color: white;
-        }
-
         .attendance-grid {
-            display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
         }
+    }
 
-        .attendance-card {
-            background: var(--card);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            border: 2px solid var(--border);
-            transition: 0.3s;
-        }
+    .notification {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: var(--success);
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s ease;
+        z-index: 2000;
+    }
 
-        .attendance-card:hover {
-            border-color: var(--primary);
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
         }
-        .attendance-card.selected {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
+        to {
+            transform: translateX(0);
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            overflow-y: auto;
-        }
-
-        .modal-content {
-            background: var(--card);
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .close-modal {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        .close-modal:hover {
-            color: var(--danger);
-        }
-
-        .grade-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-            color: white;
-        }
-
-        .grade-a {
-            background: var(--success);
-        }
-        .grade-b {
-            background: var(--info);
-        }
-        .grade-c {
-            background: var(--warning);
-        }
-        .grade-d,
-        .grade-f {
-            background: var(--danger);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 20px;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-light);
-        }
-
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-            }
-            .search-box {
-                width: 100%;
-            }
-            nav button {
-                font-size: 0.75em;
-                padding: 8px 4px;
-            }
-            table {
-                font-size: 0.7em;
-            }
-            .dashboard-cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: var(--success);
-            color: white;
-            padding: 16px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            animation: slideIn 0.3s ease;
-            z-index: 2000;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-            }
-            to {
-                transform: translateX(0);
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
 
@@ -894,27 +952,27 @@
             </table>
         </div>
 
-        <!-- ATTENDANCE -->
+        <!-- ATTENDANCE – UPDATED with simple absent toggle -->
         <div id="attendance" class="tab">
             <h2>📅 Attendance Management</h2>
-            <form id="attForm" class="card">
+            <div class="card">
                 <h3>Mark Attendance</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                     <select id="attCourse" required>
                         <option value="">Select Course</option>
                     </select>
                     <input type="date" id="attDate" required>
                 </div>
-                <p style="margin: 15px 0 10px 0; font-weight: bold;">Select Students:</p>
+                <p style="margin: 10px 0 12px 0; font-weight: 500;">👥 Students enrolled in this course</p>
                 <div class="attendance-grid" id="attStudentGrid"></div>
-                <select id="attStatus" required style="margin-top: 15px;">
-                    <option value="">Select Status</option>
-                    <option value="Present">✓ Present</option>
-                    <option value="Absent">✗ Absent</option>
-                    <option value="Leave">📋 Leave</option>
-                </select>
-                <button type="submit" class="primary" style="margin-top: 15px;">✓ Save Attendance</button>
-            </form>
+                <div class="attendance-actions">
+                    <button class="primary" id="saveAttendanceBtn">💾 Save Attendance</button>
+                    <button class="secondary" onclick="resetAttendanceForm()">🔄 Reset</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9em; color: var(--text-light);">
+                    💡 <strong>Click</strong> on a student card to toggle <strong>Absent</strong> – all others will be marked <strong>Present</strong>.
+                </p>
+            </div>
 
             <h3>Attendance Records</h3>
             <div class="filter-section">
@@ -1048,7 +1106,7 @@
         // ============================================================
         // PASSWORD PROTECTION LOGIC
         // ============================================================
-        const CORRECT_PASSWORD = 'admin123'; // ← change this to your own password
+        const CORRECT_PASSWORD = 'admin123'; // change this
 
         const overlay = document.getElementById('passwordOverlay');
         const passwordInput = document.getElementById('passwordInput');
@@ -1062,7 +1120,6 @@
             mainApp.classList.add('active');
             passwordInput.value = '';
             loginError.textContent = '';
-            // Refresh active tab data after unlock
             setTimeout(refreshActiveTab, 100);
         }
 
@@ -1154,7 +1211,7 @@
         }
 
         // ============================================================
-        // DATA STORAGE (unchanged)
+        // DATA STORAGE
         // ============================================================
         let DB = JSON.parse(localStorage.getItem('av_tuitions')) || {
             students: {},
@@ -1169,8 +1226,6 @@
 
         let nextId = { s: 1, t: 1, c: 1, f: 1, a: 1, e: 1, sc: 1 };
         if (localStorage.getItem('av_nextId')) nextId = JSON.parse(localStorage.getItem('av_nextId'));
-
-        let selectedAttendanceStudents = [];
 
         function save() {
             localStorage.setItem('av_tuitions', JSON.stringify(DB));
@@ -1200,9 +1255,7 @@
                 const exam = DB.exams[m.examId];
                 return m.studentId === studentId && exam;
             });
-
             if (studentMarks.length === 0) return 0;
-
             let total = 0;
             studentMarks.forEach(m => {
                 const exam = DB.exams[m.examId];
@@ -1210,12 +1263,11 @@
                 const gradePoint = { A: 4, B: 3, C: 2, D: 1, F: 0 } [grade];
                 total += gradePoint;
             });
-
             return (total / studentMarks.length).toFixed(2);
         }
 
         // ============================================================
-        // UTILS (unchanged)
+        // UTILS
         // ============================================================
         function getStudentName(sid) { return DB.students[sid]?.name || 'Unknown'; }
 
@@ -1235,7 +1287,7 @@
         }
 
         // ============================================================
-        // UI SWITCHING (unchanged)
+        // UI SWITCHING
         // ============================================================
         document.querySelectorAll('.tablink').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1270,7 +1322,7 @@
                     refreshFeeTab();
                     break;
                 case 'attendance':
-                    refreshAttendanceTab();
+                    refreshAttendanceTab(); // this now calls populateCourseSelects()
                     break;
                 case 'exams':
                     refreshExamsTab();
@@ -1307,50 +1359,50 @@
             const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
 
             document.getElementById('dashCards').innerHTML = `
-            <div class="mini-card">
-              <div class="number">${totalStudents}</div>
-              <div style="font-size: 0.9em; margin-top: 5px;">👥 Students</div>
-            </div>
-            <div class="mini-card">
-              <div class="number">${totalTeachers}</div>
-              <div style="font-size: 0.9em; margin-top: 5px;">👨‍🏫 Teachers</div>
-            </div>
-            <div class="mini-card">
-              <div class="number">${totalCourses}</div>
-              <div style="font-size: 0.9em; margin-top: 5px;">📚 Courses</div>
-            </div>
-            <div class="mini-card">
-              <div class="number">₹${totalCollected}</div>
-              <div style="font-size: 0.9em; margin-top: 5px;">💚 Collected</div>
-            </div>
-            <div class="mini-card">
-              <div class="number">₹${pendingAmount}</div>
-              <div style="font-size: 0.9em; margin-top: 5px;">⏳ Pending</div>
-            </div>
-            <div class="mini-card">
-              <div class="number">${collectionRate}%</div>
-              <div style="font-size: 0.9em; margin-top: 5px;">📊 Rate</div>
-            </div>
-          `;
+                <div class="mini-card">
+                  <div class="number">${totalStudents}</div>
+                  <div style="font-size: 0.9em; margin-top: 5px;">👥 Students</div>
+                </div>
+                <div class="mini-card">
+                  <div class="number">${totalTeachers}</div>
+                  <div style="font-size: 0.9em; margin-top: 5px;">👨‍🏫 Teachers</div>
+                </div>
+                <div class="mini-card">
+                  <div class="number">${totalCourses}</div>
+                  <div style="font-size: 0.9em; margin-top: 5px;">📚 Courses</div>
+                </div>
+                <div class="mini-card">
+                  <div class="number">₹${totalCollected}</div>
+                  <div style="font-size: 0.9em; margin-top: 5px;">💚 Collected</div>
+                </div>
+                <div class="mini-card">
+                  <div class="number">₹${pendingAmount}</div>
+                  <div style="font-size: 0.9em; margin-top: 5px;">⏳ Pending</div>
+                </div>
+                <div class="mini-card">
+                  <div class="number">${collectionRate}%</div>
+                  <div style="font-size: 0.9em; margin-top: 5px;">📊 Rate</div>
+                </div>
+              `;
 
             document.getElementById('dashStats').innerHTML = `
-            <div class="stat-item">
-              <div class="stat-label">Total Expected</div>
-              <div class="stat-value">₹${totalExpected}</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">Total Collected</div>
-              <div class="stat-value">₹${totalCollected}</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">Pending Fees</div>
-              <div class="stat-value">₹${pendingAmount}</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">Collection Rate</div>
-              <div class="stat-value">${collectionRate}%</div>
-            </div>
-          `;
+                <div class="stat-item">
+                  <div class="stat-label">Total Expected</div>
+                  <div class="stat-value">₹${totalExpected}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Total Collected</div>
+                  <div class="stat-value">₹${totalCollected}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Pending Fees</div>
+                  <div class="stat-value">₹${pendingAmount}</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Collection Rate</div>
+                  <div class="stat-value">${collectionRate}%</div>
+                </div>
+              `;
 
             const recent = DB.fees.slice(-5).reverse();
             let html = '<h3>Recent Payments</h3><table><tr><th>Student</th><th>Course</th><th>Amount</th><th>Date</th></tr>';
@@ -1371,16 +1423,13 @@
         function drawRevenueChart() {
             const ctx = document.getElementById('revenueChart');
             if (!ctx) return;
-
             const monthlyData = {};
             DB.fees.forEach(f => {
                 const month = f.date.substring(0, 7);
                 monthlyData[month] = (monthlyData[month] || 0) + f.amount;
             });
-
             const labels = Object.keys(monthlyData).sort();
             const data = labels.map(m => monthlyData[m]);
-
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1409,26 +1458,24 @@
             const tbody = document.querySelector('#studentTable tbody');
             tbody.innerHTML = '';
             const studentFilter = document.getElementById('studentFilter').value.toLowerCase();
-
             for (let id in DB.students) {
                 const s = DB.students[id];
                 if (studentFilter && !s.name.toLowerCase().includes(studentFilter)) continue;
-
                 const gpa = getStudentGPA(id);
                 const courseNames = (s.courses || []).map(cid => getCourseName(cid)).join(', ');
                 tbody.innerHTML += `
-              <tr>
-                <td>${id}</td>
-                <td><strong>${s.name}</strong></td>
-                <td>${s.phone || '-'}</td>
-                <td>${s.class || '-'}</td>
-                <td>${courseNames}</td>
-                <td><span class="grade-badge grade-${gpa >= 3 ? 'a' : gpa >= 2 ? 'b' : 'c'}">GPA: ${gpa}</span></td>
-                <td>
-                  <button onclick="editStudent('${id}')" class="small primary">✎ Edit</button>
-                  <button onclick="deleteStudent('${id}')" class="small danger">🗑️ Del</button>
-                </td>
-              </tr>`;
+                    <tr>
+                      <td>${id}</td>
+                      <td><strong>${s.name}</strong></td>
+                      <td>${s.phone || '-'}</td>
+                      <td>${s.class || '-'}</td>
+                      <td>${courseNames}</td>
+                      <td><span class="grade-badge grade-${gpa >= 3 ? 'a' : gpa >= 2 ? 'b' : 'c'}">GPA: ${gpa}</span></td>
+                      <td>
+                        <button onclick="editStudent('${id}')" class="small primary">✎ Edit</button>
+                        <button onclick="deleteStudent('${id}')" class="small danger">🗑️ Del</button>
+                      </td>
+                    </tr>`;
             }
             if (tbody.children.length === 0) {
                 tbody.innerHTML =
@@ -1474,7 +1521,6 @@
             const email = document.getElementById('sEmail').value;
             const sClass = document.getElementById('sClass').value;
             const selected = Array.from(document.getElementById('sCourses').selectedOptions).map(o => o.value);
-
             if (id) {
                 DB.students[id].name = name;
                 DB.students[id].phone = phone;
@@ -1517,23 +1563,21 @@
             const tbody = document.querySelector('#teacherTable tbody');
             tbody.innerHTML = '';
             const teacherFilter = document.getElementById('teacherFilter').value.toLowerCase();
-
             for (let id in DB.teachers) {
                 const t = DB.teachers[id];
                 if (teacherFilter && !t.name.toLowerCase().includes(teacherFilter)) continue;
-
                 tbody.innerHTML += `
-              <tr>
-                <td>${id}</td>
-                <td><strong>${t.name}</strong></td>
-                <td>${t.email}</td>
-                <td>${(t.subjects || []).join(', ')}</td>
-                <td>${t.qualification || '-'}</td>
-                <td>
-                  <button onclick="editTeacher('${id}')" class="small primary">✎ Edit</button>
-                  <button onclick="deleteTeacher('${id}')" class="small danger">🗑️ Del</button>
-                </td>
-              </tr>`;
+                    <tr>
+                      <td>${id}</td>
+                      <td><strong>${t.name}</strong></td>
+                      <td>${t.email}</td>
+                      <td>${(t.subjects || []).join(', ')}</td>
+                      <td>${t.qualification || '-'}</td>
+                      <td>
+                        <button onclick="editTeacher('${id}')" class="small primary">✎ Edit</button>
+                        <button onclick="deleteTeacher('${id}')" class="small danger">🗑️ Del</button>
+                      </td>
+                    </tr>`;
             }
             if (tbody.children.length === 0) {
                 tbody.innerHTML =
@@ -1574,7 +1618,6 @@
             const phone = document.getElementById('tPhone').value;
             const qualification = document.getElementById('tQualification').value;
             const subjects = document.getElementById('tSubjects').value.split(',').map(s => s.trim()).filter(s => s);
-
             if (id) {
                 DB.teachers[id].name = name;
                 DB.teachers[id].email = email;
@@ -1613,29 +1656,26 @@
             const tbody = document.querySelector('#courseTable tbody');
             tbody.innerHTML = '';
             const courseFilter = document.getElementById('courseFilter').value.toLowerCase();
-
             for (let cid in DB.courses) {
                 const c = DB.courses[cid];
                 if (courseFilter && !c.name.toLowerCase().includes(courseFilter)) continue;
-
                 let studentCount = 0;
                 for (let sid in DB.students) {
                     if ((DB.students[sid].courses || []).includes(cid)) studentCount++;
                 }
-
                 tbody.innerHTML += `
-              <tr>
-                <td>${cid}</td>
-                <td><strong>${c.name}</strong></td>
-                <td>₹${c.fee}</td>
-                <td>${getTeacherName(c.teacherId)}</td>
-                <td>${c.duration || '-'}</td>
-                <td><strong>${studentCount}</strong></td>
-                <td>
-                  <button onclick="editCourse('${cid}')" class="small primary">✎ Edit</button>
-                  <button onclick="deleteCourse('${cid}')" class="small danger">🗑️ Del</button>
-                </td>
-              </tr>`;
+                    <tr>
+                      <td>${cid}</td>
+                      <td><strong>${c.name}</strong></td>
+                      <td>₹${c.fee}</td>
+                      <td>${getTeacherName(c.teacherId)}</td>
+                      <td>${c.duration || '-'}</td>
+                      <td><strong>${studentCount}</strong></td>
+                      <td>
+                        <button onclick="editCourse('${cid}')" class="small primary">✎ Edit</button>
+                        <button onclick="deleteCourse('${cid}')" class="small danger">🗑️ Del</button>
+                      </td>
+                    </tr>`;
             }
             if (tbody.children.length === 0) {
                 tbody.innerHTML =
@@ -1684,7 +1724,6 @@
             const teacherId = document.getElementById('cTeacher').value || null;
             const duration = document.getElementById('cDuration').value;
             const description = document.getElementById('cDescription').value;
-
             if (id) {
                 DB.courses[id].name = name;
                 DB.courses[id].fee = fee;
@@ -1753,7 +1792,6 @@
             let totalCollected = DB.fees.reduce((sum, f) => sum + f.amount, 0);
             let totalExpected = 0;
             let pending = 0;
-
             for (let sid in DB.students) {
                 const student = DB.students[sid];
                 (student.courses || []).forEach(cid => {
@@ -1762,9 +1800,7 @@
                     pending += Math.max(0, getDueAmount(sid, cid));
                 });
             }
-
             const collectionRate = totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
-
             document.getElementById('totalCollected').textContent = '₹' + totalCollected;
             document.getElementById('pendingFees').textContent = '₹' + pending;
             document.getElementById('collectionRate').textContent = collectionRate + '%';
@@ -1773,28 +1809,24 @@
             const tbody = document.querySelector('#paymentTable tbody');
             tbody.innerHTML = '';
             const feeFilter = document.getElementById('feeFilter').value.toLowerCase();
-
             DB.fees.slice().reverse().forEach(f => {
                 const studentName = getStudentName(f.studentId);
                 if (feeFilter && !studentName.toLowerCase().includes(feeFilter)) return;
-
                 const due = getDueAmount(f.studentId, f.courseId);
                 tbody.innerHTML += `
-              <tr>
-                <td><strong>${studentName}</strong></td>
-                <td>${getCourseName(f.courseId)}</td>
-                <td>₹${f.amount}</td>
-                <td>${f.date}</td>
-                <td style="color:${due > 0 ? 'var(--danger)' : 'var(--success)'}">${due > 0 ? '⏳ Due ₹'+due : '✓ Paid'}</td>
-                <td><button onclick="deleteFee('${f.id}')" class="small danger">🗑️ Del</button></td>
-              </tr>`;
+                    <tr>
+                      <td><strong>${studentName}</strong></td>
+                      <td>${getCourseName(f.courseId)}</td>
+                      <td>₹${f.amount}</td>
+                      <td>${f.date}</td>
+                      <td style="color:${due > 0 ? 'var(--danger)' : 'var(--success)'}">${due > 0 ? '⏳ Due ₹'+due : '✓ Paid'}</td>
+                      <td><button onclick="deleteFee('${f.id}')" class="small danger">🗑️ Del</button></td>
+                    </tr>`;
             });
-
             if (tbody.children.length === 0) {
                 tbody.innerHTML =
                     '<tr><td colspan="6" style="text-align: center; padding: 20px;">No payments recorded</td></tr>';
             }
-
             populateCourseSelects();
         }
 
@@ -1814,12 +1846,10 @@
             const courseId = document.getElementById('payCourse').value;
             const amount = parseFloat(document.getElementById('payAmount').value);
             const date = document.getElementById('payDate').value;
-
             if (!studentId || !courseId || isNaN(amount) || !date) {
                 showNotification('⚠️ Please fill all fields!');
                 return;
             }
-
             DB.fees.push({ id: generateId('f'), studentId, courseId, amount, date });
             save();
             this.reset();
@@ -1834,112 +1864,240 @@
         }
 
         // ============================================================
-        // ATTENDANCE (unchanged)
+        // ATTENDANCE – UPDATED with simple absent toggle
         // ============================================================
+        // Global state for current attendance: { studentId: 'Present'|'Absent' }
+        let attendanceState = {};
+
         function refreshAttendanceTab() {
+            // populate course dropdown
+            populateCourseSelects();
+
             const courseId = document.getElementById('attCourse').value;
-            const attStudentGrid = document.getElementById('attStudentGrid');
-            attStudentGrid.innerHTML = '';
+            const date = document.getElementById('attDate').value;
+            const grid = document.getElementById('attStudentGrid');
+            grid.innerHTML = '';
 
             if (!courseId) {
-                attStudentGrid.innerHTML =
+                grid.innerHTML =
                     '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">Please select a course</p>';
+                renderAttendanceTable();
                 return;
             }
 
+            // Get all students enrolled in this course
+            const enrolledStudents = [];
             for (let sid in DB.students) {
                 const s = DB.students[sid];
-                if (!((s.courses || []).includes(courseId))) continue;
-
-                const isSelected = selectedAttendanceStudents.includes(sid);
-                attStudentGrid.innerHTML += `
-              <div class="attendance-card ${isSelected ? 'selected' : ''}" 
-                   onclick="toggleAttendanceStudent('${sid}')">
-                <strong>${s.name}</strong>
-              </div>`;
+                if ((s.courses || []).includes(courseId)) {
+                    enrolledStudents.push({ id: sid, name: s.name });
+                }
             }
 
+            if (enrolledStudents.length === 0) {
+                grid.innerHTML =
+                    '<p style="grid-column: 1/-1; text-align: center; padding: 20px;">No students enrolled in this course</p>';
+                renderAttendanceTable();
+                return;
+            }
+
+            // If date is selected, load existing attendance for that course+date
+            attendanceState = {};
+            if (date) {
+                const existing = DB.attendance.filter(a => a.courseId === courseId && a.date === date);
+                existing.forEach(a => {
+                    attendanceState[a.studentId] = a.status === 'Absent' ? 'Absent' : 'Present';
+                });
+            }
+
+            // For students without existing record, default to 'Present' (unless we want to leave unmarked)
+            // We'll set default to Present so that when saving, we record all.
+            enrolledStudents.forEach(s => {
+                if (!attendanceState[s.id]) {
+                    attendanceState[s.id] = 'Present';
+                }
+            });
+
+            // Render cards
+            enrolledStudents.forEach(s => {
+                const status = attendanceState[s.id] || 'Present';
+                const isAbsent = (status === 'Absent');
+                const card = document.createElement('div');
+                card.className = `attendance-card ${isAbsent ? 'absent' : 'present'}`;
+                card.innerHTML = `
+                    <div class="student-name">${s.name}</div>
+                    <div class="status-badge">${isAbsent ? '✗ Absent' : '✓ Present'}</div>
+                    <button class="toggle-btn" data-sid="${s.id}">${isAbsent ? 'Mark Present' : 'Mark Absent'}</button>
+                `;
+                grid.appendChild(card);
+
+                // Attach click event to the toggle button
+                const btn = card.querySelector('.toggle-btn');
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleAttendanceStudent(s.id, courseId);
+                });
+                // Also click on card itself toggles
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.toggle-btn')) return;
+                    toggleAttendanceStudent(s.id, courseId);
+                });
+            });
+
+            renderAttendanceTable();
+        }
+
+        function toggleAttendanceStudent(studentId, courseId) {
+            // If current status is Absent, set to Present; else set to Absent
+            const current = attendanceState[studentId] || 'Present';
+            if (current === 'Absent') {
+                attendanceState[studentId] = 'Present';
+            } else {
+                attendanceState[studentId] = 'Absent';
+            }
+            // All other students become Present
+            for (let sid in attendanceState) {
+                if (sid !== studentId) {
+                    attendanceState[sid] = 'Present';
+                }
+            }
+            // Re-render the grid (refreshAttendanceTab will rebuild from state)
+            // But we need to preserve the current state; we'll just re-render cards without resetting state.
+            // Best: re-render the grid using current state.
+            const courseIdVal = document.getElementById('attCourse').value;
+            if (courseIdVal !== courseId) return; // safety
+            const grid = document.getElementById('attStudentGrid');
+            // Rebuild cards from attendanceState
+            const enrolledStudents = [];
+            for (let sid in DB.students) {
+                const s = DB.students[sid];
+                if ((s.courses || []).includes(courseId)) {
+                    enrolledStudents.push({ id: sid, name: s.name });
+                }
+            }
+            grid.innerHTML = '';
+            enrolledStudents.forEach(s => {
+                const status = attendanceState[s.id] || 'Present';
+                const isAbsent = (status === 'Absent');
+                const card = document.createElement('div');
+                card.className = `attendance-card ${isAbsent ? 'absent' : 'present'}`;
+                card.innerHTML = `
+                    <div class="student-name">${s.name}</div>
+                    <div class="status-badge">${isAbsent ? '✗ Absent' : '✓ Present'}</div>
+                    <button class="toggle-btn" data-sid="${s.id}">${isAbsent ? 'Mark Present' : 'Mark Absent'}</button>
+                `;
+                grid.appendChild(card);
+                const btn = card.querySelector('.toggle-btn');
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleAttendanceStudent(s.id, courseId);
+                });
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('.toggle-btn')) return;
+                    toggleAttendanceStudent(s.id, courseId);
+                });
+            });
+            // Update table
+            renderAttendanceTable();
+        }
+
+        function renderAttendanceTable() {
             const tbody = document.querySelector('#attTable tbody');
             tbody.innerHTML = '';
             const attFilter = document.getElementById('attFilter').value.toLowerCase();
-
-            DB.attendance.slice().reverse().forEach(a => {
+            const records = DB.attendance.slice().reverse();
+            records.forEach(a => {
                 const studentName = getStudentName(a.studentId);
                 if (attFilter && !studentName.toLowerCase().includes(attFilter)) return;
-
                 tbody.innerHTML += `
-              <tr>
-                <td><strong>${studentName}</strong></td>
-                <td>${getCourseName(a.courseId)}</td>
-                <td>${a.date}</td>
-                <td><span style="font-weight: bold;">${a.status === 'Present' ? '✓ Present' : a.status === 'Absent' ? '✗ Absent' : '📋 Leave'}</span></td>
-              </tr>`;
+                    <tr>
+                      <td><strong>${studentName}</strong></td>
+                      <td>${getCourseName(a.courseId)}</td>
+                      <td>${a.date}</td>
+                      <td><span style="font-weight: bold;">${a.status === 'Present' ? '✓ Present' : a.status === 'Absent' ? '✗ Absent' : '📋 Leave'}</span></td>
+                    </tr>`;
             });
-
             if (tbody.children.length === 0) {
                 tbody.innerHTML =
                     '<tr><td colspan="4" style="text-align: center; padding: 20px;">No attendance records</td></tr>';
             }
         }
 
-        function toggleAttendanceStudent(studentId) {
-            const idx = selectedAttendanceStudents.indexOf(studentId);
-            if (idx > -1) {
-                selectedAttendanceStudents.splice(idx, 1);
-            } else {
-                selectedAttendanceStudents.push(studentId);
-            }
-            refreshAttendanceTab();
-        }
-
-        document.getElementById('attCourse').addEventListener('change', refreshAttendanceTab);
-
-        document.getElementById('attForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Save attendance for current course+date
+        document.getElementById('saveAttendanceBtn').addEventListener('click', function() {
             const courseId = document.getElementById('attCourse').value;
             const date = document.getElementById('attDate').value;
-            const status = document.getElementById('attStatus').value;
-
-            if (!courseId || !date || !status || selectedAttendanceStudents.length === 0) {
-                showNotification('⚠️ Please select course, date, status and students!');
+            if (!courseId || !date) {
+                showNotification('⚠️ Please select course and date.');
                 return;
             }
-
-            selectedAttendanceStudents.forEach(studentId => {
-                DB.attendance.push({ id: generateId('a'), studentId, courseId, date, status });
+            // Check if any student is marked
+            const entries = Object.entries(attendanceState);
+            if (entries.length === 0) {
+                showNotification('⚠️ No students to save.');
+                return;
+            }
+            // Remove existing attendance for this course+date
+            DB.attendance = DB.attendance.filter(a => !(a.courseId === courseId && a.date === date));
+            // Add new records
+            entries.forEach(([sid, status]) => {
+                DB.attendance.push({
+                    id: generateId('a'),
+                    studentId: sid,
+                    courseId: courseId,
+                    date: date,
+                    status: status // 'Present' or 'Absent'
+                });
             });
-
             save();
-            selectedAttendanceStudents = [];
-            this.reset();
+            showNotification(`✓ Attendance saved for ${entries.length} students.`);
+            // Refresh table
+            renderAttendanceTable();
+            // Optionally clear state? Keep it.
+        });
+
+        // Reset form: clear state and re-render
+        function resetAttendanceForm() {
+            document.getElementById('attCourse').value = '';
+            document.getElementById('attDate').value = '';
+            attendanceState = {};
             refreshAttendanceTab();
-            showNotification('✓ Attendance saved!');
+            showNotification('🔄 Form reset');
+        }
+
+        document.getElementById('attCourse').addEventListener('change', function() {
+            // When course changes, we need to rebuild the grid with new course
+            refreshAttendanceTab();
+        });
+
+        document.getElementById('attDate').addEventListener('change', function() {
+            // When date changes, reload attendance for that date
+            refreshAttendanceTab();
         });
 
         function clearAttFilter() {
             document.getElementById('attFilter').value = '';
-            refreshAttendanceTab();
+            renderAttendanceTable();
         }
+
+        // Override the original refreshAttendanceTab to call populateCourseSelects and our logic
+        // We already redefined refreshAttendanceTab above.
 
         // ============================================================
         // EXAMS (unchanged)
         // ============================================================
         function refreshExamsTab() {
             populateCourseSelects();
-
             const container = document.getElementById('resultsDiv');
             container.innerHTML = '';
-
             let hasExams = false;
             for (let eid in DB.exams) {
                 hasExams = true;
                 const exam = DB.exams[eid];
                 const marksForExam = DB.marks.filter(m => m.examId === eid);
-
                 let html = `<div class="card">
-              <h3>${exam.name}</h3>
-              <p><strong>Course:</strong> ${getCourseName(exam.courseId)} | <strong>Date:</strong> ${exam.date} | <strong>Max Marks:</strong> ${exam.maxMarks}</p>`;
-
+                    <h3>${exam.name}</h3>
+                    <p><strong>Course:</strong> ${getCourseName(exam.courseId)} | <strong>Date:</strong> ${exam.date} | <strong>Max Marks:</strong> ${exam.maxMarks}</p>`;
                 if (marksForExam.length) {
                     html += '<table><tr><th>Student</th><th>Marks</th><th>%</th><th>Grade</th></tr>';
                     const sortedMarks = marksForExam.sort((a, b) => b.marks - a.marks);
@@ -1948,22 +2106,20 @@
                         const grade = calculateGrade(m.marks, exam.maxMarks);
                         html +=
                             `<tr ${idx === 0 ? 'style="background: var(--success); color: white;"' : ''}>
-                    <td>${getStudentName(m.studentId)}</td>
-                    <td>${m.marks}</td>
-                    <td>${percentage}%</td>
-                    <td><span class="grade-badge grade-${grade.toLowerCase()}">${grade}</span></td>
-                  </tr>`;
+                            <td>${getStudentName(m.studentId)}</td>
+                            <td>${m.marks}</td>
+                            <td>${percentage}%</td>
+                            <td><span class="grade-badge grade-${grade.toLowerCase()}">${grade}</span></td>
+                          </tr>`;
                     });
                     html += '</table>';
                 } else {
                     html += '<p style="text-align: center; padding: 20px; color: var(--text-light);">No marks entered</p>';
                 }
-
                 html += `<button onclick="deleteExam('${eid}')" class="small danger" style="margin-top: 10px;">🗑️ Delete Exam</button>
-              </div>`;
+                    </div>`;
                 container.innerHTML += html;
             }
-
             if (!hasExams) {
                 container.innerHTML = '<div class="no-data"><p>No exams created yet</p></div>';
             }
@@ -1985,12 +2141,10 @@
             const courseId = document.getElementById('examCourse').value;
             const date = document.getElementById('examDate').value;
             const maxMarks = parseFloat(document.getElementById('maxMarks').value);
-
             if (!courseId || !name || !date || isNaN(maxMarks)) {
                 showNotification('⚠️ Please fill all fields!');
                 return;
             }
-
             const newId = generateId('e');
             DB.exams[newId] = { name, courseId, date, maxMarks };
             save();
@@ -2004,12 +2158,10 @@
             const examId = document.getElementById('marksExam').value;
             const studentId = document.getElementById('marksStudent').value;
             const marks = parseFloat(document.getElementById('marksObtained').value);
-
             if (!examId || !studentId || isNaN(marks)) {
                 showNotification('⚠️ Please fill all fields!');
                 return;
             }
-
             DB.marks = DB.marks.filter(m => !(m.examId === examId && m.studentId === studentId));
             DB.marks.push({ examId, studentId, marks });
             save();
@@ -2023,32 +2175,26 @@
         // ============================================================
         function refreshScheduleTab() {
             populateCourseSelects();
-
             const scheduleTable = document.getElementById('scheduleTable');
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
             let table = '<table><tr><th>Day</th><th>Course</th><th>Time</th><th>Notes</th><th>Actions</th></tr>';
-
             days.forEach(day => {
                 const daySchedules = DB.schedule.filter(s => s.day === day).sort((a, b) => {
                     return a.start.localeCompare(b.start);
                 });
-
                 if (daySchedules.length === 0) return;
-
                 daySchedules.forEach(s => {
                     table += `<tr>
-                <td><strong>${day}</strong></td>
-                <td>${getCourseName(s.courseId)}</td>
-                <td>${s.start} - ${s.end}</td>
-                <td>${s.notes || '-'}</td>
-                <td>
-                  <button onclick="deleteSchedule('${s.id}')" class="small danger">🗑️ Del</button>
-                </td>
-              </tr>`;
+                            <td><strong>${day}</strong></td>
+                            <td>${getCourseName(s.courseId)}</td>
+                            <td>${s.start} - ${s.end}</td>
+                            <td>${s.notes || '-'}</td>
+                            <td>
+                              <button onclick="deleteSchedule('${s.id}')" class="small danger">🗑️ Del</button>
+                            </td>
+                          </tr>`;
                 });
             });
-
             table += '</table>';
             scheduleTable.innerHTML = table.includes('<tr><td') ? table : '<p class="no-data">No schedule created</p>';
         }
@@ -2069,12 +2215,10 @@
             const start = document.getElementById('schedStart').value;
             const end = document.getElementById('schedEnd').value;
             const notes = document.getElementById('schedNotes').value;
-
             if (!courseId || !day || !start || !end) {
                 showNotification('⚠️ Please fill all required fields!');
                 return;
             }
-
             const id = generateId('sc');
             DB.schedule.push({ id, courseId, day, start, end, notes });
             save();
@@ -2088,7 +2232,6 @@
         // ============================================================
         function loadReports() {
             let html = '';
-
             // Pending Fees Report
             html += '<h3>📋 Pending Fees Report</h3>';
             html += '<table><tr><th>Student</th><th>Course</th><th>Total Fee</th><th>Paid</th><th>Due</th></tr>';
@@ -2121,7 +2264,6 @@
                 else if (a.status === 'Absent') attSummary[key].absent++;
                 else attSummary[key].leave++;
             });
-
             for (let key in attSummary) {
                 const [sid, cid] = key.split('_');
                 const sum = attSummary[key];
@@ -2142,7 +2284,6 @@
                 const studentMarks = DB.marks.filter(m => m.studentId === sid);
                 if (studentMarks.length === 0) continue;
                 hasPerformance = true;
-
                 const gpa = getStudentGPA(sid);
                 let totalPercentage = 0;
                 studentMarks.forEach(m => {
@@ -2180,25 +2321,21 @@
                 csv +=
                     `${sid},${s.name},${s.phone || ''},${s.class || ''},${s.email || ''},"${(s.courses || []).map(c => getCourseName(c)).join(', ')}"\n`;
             }
-
             csv += '\nTEACHERS\nID,Name,Email,Phone,Subjects,Qualification\n';
             for (let tid in DB.teachers) {
                 const t = DB.teachers[tid];
                 csv +=
                     `${tid},${t.name},${t.email},${t.phone || ''},"${(t.subjects || []).join(', ')}",${t.qualification || ''}\n`;
             }
-
             csv += '\nCOURSES\nID,Name,Fee,Teacher,Duration\n';
             for (let cid in DB.courses) {
                 const c = DB.courses[cid];
                 csv += `${cid},${c.name},${c.fee},${getTeacherName(c.teacherId)},${c.duration || ''}\n`;
             }
-
             csv += '\nFEES\nStudent,Course,Amount,Date\n';
             DB.fees.forEach(f => {
                 csv += `${getStudentName(f.studentId)},${getCourseName(f.courseId)},${f.amount},${f.date}\n`;
             });
-
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -2244,12 +2381,10 @@
                     backups.push({ key, data: JSON.parse(localStorage.getItem(key)) });
                 }
             }
-
             if (backups.length === 0) {
                 showNotification('⚠️ No backups found!');
                 return;
             }
-
             const latest = backups.sort((a, b) => b.key.localeCompare(a.key))[0];
             if (confirm('Restore to ' + latest.data.timestamp + '?')) {
                 DB = latest.data.data;
@@ -2277,7 +2412,6 @@
         document.getElementById('importFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(event) {
                 try {
@@ -2296,7 +2430,7 @@
         });
 
         // ============================================================
-        // GLOBAL SEARCH (unchanged)
+        // GLOBAL SEARCH
         // ============================================================
         document.getElementById('globalSearch').addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
@@ -2306,7 +2440,6 @@
                 });
                 return;
             }
-
             document.querySelectorAll('.tab').forEach(tab => {
                 let found = false;
                 const text = tab.textContent.toLowerCase();
@@ -2315,7 +2448,6 @@
                 }
                 tab.style.display = found ? 'block' : 'none';
             });
-
             document.querySelectorAll('.tablink').forEach(btn => {
                 const tabId = btn.dataset.tab;
                 const tabEl = document.getElementById(tabId);
@@ -2332,15 +2464,13 @@
         // ============================================================
         window.addEventListener('load', function() {
             initTheme();
-            // Ensure app is locked by default
             overlay.classList.remove('hidden');
             mainApp.classList.remove('active');
             passwordInput.focus();
-            // Pre-populate data in background
+            // pre-populate dropdowns but not fully visible
             refreshActiveTab();
         });
 
-        // Re-run when unlocked
         console.log('🔐 Password-protected AV Tuitions loaded.');
         console.log('ℹ️ Default password: admin123');
     </script>
